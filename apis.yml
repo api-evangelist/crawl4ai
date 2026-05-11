@@ -28,6 +28,10 @@ common:
     url: https://crawl4ai.com
   - type: Documentation
     url: https://docs.crawl4ai.com
+  - type: Integrations
+    url: https://docs.crawl4ai.com/marketplace/
+integrations:
+  - name: Crawl4AI
 maintainers:
   - FN: Kin Lane
     email: kin@apievangelist.com

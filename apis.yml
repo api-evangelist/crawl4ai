@@ -24,6 +24,8 @@ apis:
       - type: Documentation
         url: https://docs.crawl4ai.com
 common:
+  - type: LinkedIn
+    url: https://www.linkedin.com/company/crawl4ai
   - type: Website
     url: https://crawl4ai.com
   - type: Documentation

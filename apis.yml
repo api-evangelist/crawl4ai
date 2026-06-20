@@ -3,7 +3,7 @@ name: Crawl4AI
 description: >-
   Crawl4AI is an open-source web crawling tool optimized for feeding web content into large language models.
 type: Index
-image: https://kinlane-productions.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
 tags:
   - AI Automation
   - Web Crawling

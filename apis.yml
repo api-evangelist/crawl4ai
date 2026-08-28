@@ -3,6 +3,17 @@ name: Crawl4AI
 description: >-
   Crawl4AI is an open-source web crawling tool optimized for feeding web content into large language models.
 type: Index
+deliveryModel:
+  model: unknown
+  open_source: false
+  commercial: false
+  callable_host: false
+  label: Delivery model not determined — needs a product licence on record
+  confidence: low
+  source:
+  - none
+  generated: '2026-08-28'
+  method: derived
 accessModel:
   pricing: freemium
   onboarding: unknown

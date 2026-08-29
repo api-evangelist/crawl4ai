@@ -1,0 +1,110 @@
+generated: '2026-08-29'
+method: searched
+source: >-
+  https://github.com/unclecode/crawl4ai-cloud-sdk/blob/main/python/claude-plugin/skills/crawl4ai/reference/errors.md
+  (verbatim copy at skills/reference/crawl4ai-errors.md), plus
+  https://gate.crawl4ai.com/llms.txt and the CHANGELOG 0.9.0 error-envelope change
+provider: Crawl4AI
+providerId: crawl4ai
+description: >-
+  Crawl4AI publishes a real error reference with causes and remediation for every
+  status it returns. It is NOT RFC 9457 — there is no application/problem+json
+  media type and no type/title/detail/instance document. Three different envelopes
+  are in use across the three surfaces, which is itself the finding.
+format: vendor-json
+rfc9457: false
+envelopes:
+  - surface: Crawl4AI Cloud API (gate.crawl4ai.com)
+    shape: '{"error": "..."}'
+    media_type: application/json
+    source: https://gate.crawl4ai.com/llms.txt
+  - surface: Crawl4AI Cloud v1 API (api.crawl4ai.com)
+    shape: '{"detail": "message"}'
+    media_type: application/json
+    note: >-
+      Wrapper endpoints additionally carry error_message in the normal response
+      body alongside success:false, so a caller must check two places.
+    source: skills/reference/crawl4ai-errors.md
+  - surface: Crawl4AI Self-Hosted Docker API
+    shape: '{"error": "Internal server error", "correlation_id": "..."}'
+    media_type: application/json
+    note: >-
+      Since 0.9.0 all 5xx responses are deliberately generic; the correlation_id is
+      the only way to match a failure to the server log. Detail is withheld on
+      purpose as a hardening measure.
+    source: https://docs.crawl4ai.com/blog/ (CHANGELOG 0.9.0)
+problem_types:
+  - status: 400
+    name: Bad Request
+    causes: Invalid URL format, missing required field, malformed JSON body.
+    remediation: >-
+      Check the URL carries a scheme (https://). Validate the JSON payload. On the
+      self-hosted server, 400 is also returned for an SSRF-disallowed destination.
+  - status: 401
+    name: Unauthorized
+    causes: Missing X-API-Key / Authorization header, invalid or expired key.
+    remediation: >-
+      Set CRAWL4AI_API_KEY. Confirmed live — an unauthenticated POST /scrape on
+      gate.crawl4ai.com returned 401 with a zero-length body on 2026-08-29.
+  - status: 403
+    name: Forbidden
+    causes: Plan does not allow this feature; caller is not the resource owner.
+    remediation: Upgrade the plan, or check ownership of the job/profile being accessed.
+  - status: 404
+    name: Not Found
+    causes: Job ID does not exist, or endpoint typo.
+    remediation: >-
+      Verify job_id and the path — the docs specifically warn that jobs live under
+      /v1/markdown/jobs/, not /v1/jobs/.
+  - status: 422
+    name: Validation Error
+    causes: >-
+      Pydantic model rejection — wrong types, both url and urls set, or method
+      "auto" used on a batch extract. Also returned for malformed or hop-by-hop
+      webhook headers on the self-hosted server.
+    remediation: >-
+      Read `detail` for the offending field. For batch extract use method "llm" or
+      "schema".
+  - status: 429
+    name: Rate or Quota Exceeded
+    causes: Too many requests per minute, daily crawl limit hit, credit quota exhausted.
+    remediation: 'Wait X-RateLimit-Reset seconds and retry. See rate-limits/.'
+  - status: 500
+    name: Server Error
+    causes: Internal bug or worker crash.
+    remediation: >-
+      Retry once. If it persists, report it with the request_id (self-hosted:
+      correlation_id) from the response.
+  - status: 503
+    name: Service Unavailable
+    causes: No workers available, all browsers busy.
+    remediation: Retry after 5-10s; the system auto-scales. Peak hours may be congested.
+  - status: 504
+    name: Gateway Timeout
+    causes: Page took too long to load, or extraction exceeded the time limit.
+    remediation: >-
+      Increase page_timeout in crawler_config, use the "http" strategy for static
+      pages, or simplify the extraction.
+retry_policy:
+  published: true
+  source: skills/reference/crawl4ai-errors.md
+  rules:
+    - on: 429
+      action: Wait X-RateLimit-Reset seconds, then retry.
+    - on: 503
+      action: Retry after 5s, max 3 attempts.
+    - on: 504
+      action: Switch to the "http" strategy, or increase page_timeout.
+    - on: 5xx
+      action: Retry once after 2s; if still failing the fault is server-side.
+gaps:
+  - >-
+    No RFC 9457 application/problem+json anywhere, and no machine-readable error
+    code vocabulary — every error is a bare human string, so an agent can branch
+    only on the HTTP status.
+  - >-
+    Three envelope shapes across three surfaces ({"error"}, {"detail"} +
+    error_message, {"error"+correlation_id}) means one client cannot parse them all.
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com

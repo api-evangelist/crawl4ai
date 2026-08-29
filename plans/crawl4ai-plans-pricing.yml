@@ -4,138 +4,146 @@ schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main
 provider: Crawl4AI
 providerId: crawl4ai
 created: '2026-05-04'
-# Provenance stamped 2026-08-11: this artifact was written by the API Evangelist
-# bulk sweep dated 2026-05-04, not harvested from the provider. See roadmap#35.
-method: generated
-modified: '2026-05-04'
+generated: '2026-08-29'
+modified: '2026-08-29'
+method: searched
+source: 'https://gate.crawl4ai.com/ (#pricing section), fetched 2026-08-29'
+supersedes: >-
+  The 2026-05-04 bulk-sweep scaffold previously in this file, whose Free/
+  Professional/Enterprise tiers and placeholder prices were invented. Crawl4AI's
+  real ladder is Community / Supporter / Developer / Enterprise.
 tags:
   - AI Automation
   - Web Crawling
-description: Machine-readable plans and pricing scaffold for this API provider. Conforms to the API Commons
-  Plans schema. Tier limits and prices are scaffold defaults; replace with provider-published values.
+description: >-
+  Crawl4AI publishes pricing openly on the Cloud API landing page. The core
+  crawler stays free and Apache-2.0 forever; the hosted API is funded by a $7/mo
+  Supporter tier explicitly described as subsidising the free Community tier. Two
+  of the four tiers are not yet purchasable.
+currency: USD
+billing_processor: Stripe
+plan_count: 4
 plans:
-  - id: crawl4ai-free
-    name: Free
+  - id: crawl4ai-community
+    name: Community
     type: freemium
-    description: Free entry tier for the Crawl4AI API surface. Intended for evaluation, prototyping, and
-      low-volume integrations. Real limits and pricing must be reconciled with the provider's published
-      plan documentation.
+    price: '0.00'
+    period: forever
+    available: true
+    description: >-
+      "Play, every prototype & hackathon - funded by our supporters & enterprise
+      customers. Verify your email to keep your key." A 24-hour key is issued
+      instantly with no signup; email verification makes it permanent.
     entries:
-      - label: API Requests
-        description: Monthly API request quota across all included endpoints
-        name: api_requests
+      - label: Web search
+        name: web_search
         type: quota
-        metric: requests
+        metric: searches
+        limit: 5000
+        timeFrame: month
+        price: '0.00'
+      - label: Scrape
+        name: scrape
+        type: quota
+        metric: scrapes
         limit: 1000
         timeFrame: month
-        geo: global
-        domains: []
-        unit: 1
         price: '0.00'
-        userMultiplied: false
-      - label: Rate Limit
-        description: Maximum requests per minute on the free tier
-        name: rate_limit
-        type: rate
-        metric: requests_per_minute
-        limit: 10
-        timeFrame: minute
-        geo: global
-        domains: []
-        unit: 1
-        price: '0.00'
-        userMultiplied: false
     elements:
-      - name: Public Documentation
-      - name: Community Support
-      - name: Sandbox Access
-      - name: Crawl4AI
-  - id: crawl4ai-pro
-    name: Professional
+      - name: Public documentation
+      - name: llms.txt
+      - name: Hosted MCP server
+      - name: Discord community support
+  - id: crawl4ai-supporter
+    name: Supporter
     type: paid
-    description: Production tier for Crawl4AI. Provides higher quotas, priority support, and access to
-      the broader API portfolio. Pricing placeholder; align with the provider's pricing page.
+    price: '7.00'
+    list_price: '10.00'
+    period: month
+    available: true
+    description: >-
+      "More of everything - 30k searches, 5k scrapes, big extract budget - for less
+      than a coffee. Fund the free tier, get the caps." Listed at $10 with a $7
+      promotional price on the page as fetched.
     entries:
-      - label: API Requests
-        description: Monthly API request quota
-        name: api_requests
+      - label: Web search
+        name: web_search
         type: quota
-        metric: requests
-        limit: 100000
+        metric: searches
+        limit: 30000
         timeFrame: month
-        geo: global
-        domains: []
-        unit: 1
-        price: TBD
-        userMultiplied: false
-      - label: Rate Limit
-        description: Maximum requests per minute on the professional tier
-        name: rate_limit
-        type: rate
-        metric: requests_per_minute
-        limit: 100
-        timeFrame: minute
-        geo: global
-        domains: []
-        unit: 1
-        price: '0.00'
-        userMultiplied: false
-      - label: Overage
-        description: Per-request price after monthly quota is exceeded
-        name: overage
-        type: metered
-        metric: requests
-        limit: -1
+        price: '7.00'
+      - label: Scrape
+        name: scrape
+        type: quota
+        metric: scrapes
+        limit: 5000
         timeFrame: month
-        geo: global
-        domains: []
-        unit: 1000
-        price: TBD
-        userMultiplied: false
-    elements:
-      - name: All Production Endpoints
-      - name: Email Support
-      - name: SLA Targets
-      - name: Webhook Subscriptions
-      - name: Crawl4AI
+        price: '7.00'
+      - label: Extract budget
+        name: extract
+        type: quota
+        metric: llm_extractions
+        limit: null
+        timeFrame: month
+        note: '"big extract budget" — no number published.'
+  - id: crawl4ai-developer
+    name: Developer
+    type: paid
+    price: null
+    period: month
+    available: false
+    status: coming-soon
+    description: >-
+      "Coming soon. Production limits, usage dashboard, batch & scheduled crawls."
+      No price published.
   - id: crawl4ai-enterprise
     name: Enterprise
     type: enterprise
-    description: Custom-negotiated tier for Crawl4AI. Includes dedicated capacity, contractual SLAs, security
-      review, data residency options, and named technical account management.
-    entries:
-      - label: API Requests
-        description: Negotiated request volume; -1 indicates uncapped subject to fair use
-        name: api_requests
-        type: quota
-        metric: requests
-        limit: -1
-        timeFrame: month
-        geo: configurable
-        domains: []
-        unit: 1
-        price: custom
-        userMultiplied: false
-      - label: Rate Limit
-        description: Negotiated burst and steady-state rate
-        name: rate_limit
-        type: rate
-        metric: requests_per_minute
-        limit: 1000
-        timeFrame: minute
-        geo: configurable
-        domains: []
-        unit: 1
-        price: custom
-        userMultiplied: false
-    elements:
-      - name: Unlimited / Negotiated Volume
-      - name: 24/7 Dedicated Support
-      - name: Contractual SLA
-      - name: Security & Compliance Review
-      - name: Dedicated Account Manager
-      - name: Custom Data Residency
-      - name: Crawl4AI
+    price: null
+    period: negotiated
+    available: true
+    contact_sales: true
+    description: >-
+      "Let's talk. Volume, dedicated regions, SLA, private archive." Priced by
+      contact only.
+credit_model:
+  note: >-
+    Usage is metered in credits and the credit cost of a page depends on the proxy
+    mode requested: off = 1x, on (residential) = 5x, crawl4ai (Web-Unlocker) = 10x.
+    Responses carry usage.credits_used and usage.credits_remaining.
+  source: skills/reference/crawl4ai-endpoints.md
+published_competitive_comparison:
+  note: >-
+    Crawl4AI publishes a head-to-head table on its own pricing section, recorded
+    here as a provider claim, not as an API Evangelist measurement.
+  rows:
+    - plan: 'Crawl4AI Community (free)'
+      search_per_month: 5000
+      scrape_per_month: 1000
+    - plan: 'Crawl4AI Supporter ($7)'
+      search_per_month: 30000
+      scrape_per_month: 5000
+    - plan: 'Firecrawl Hobby ($16)'
+      search_per_month: '~2500 (drawn from shared page credits)'
+      scrape_per_month: 5000
+    - plan: 'SerpApi Starter ($25)'
+      search_per_month: 1000
+      scrape_per_month: null
+    - plan: 'ScraperAPI Hobby ($49)'
+      search_per_month: null
+      scrape_per_month: '~100000 credits'
+self_host_option:
+  price: '0.00'
+  license: Apache-2.0
+  description: >-
+    "It's Apache-2.0. pip install crawl4ai, point it at your own boxes and proxies.
+    No gate, no token." The self-hosted Docker server has no Crawl4AI-imposed
+    quota at all.
+terms: 'https://gate.crawl4ai.com/legal/#terms'
+refunds: >-
+  "Except where required by law, payments are non-refundable." Subscriptions renew
+  automatically; cancellation takes effect at the end of the current period.
 maintainers:
   - FN: Kin Lane
     email: kin@apievangelist.com

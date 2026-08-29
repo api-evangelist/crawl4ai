@@ -1,0 +1,191 @@
+generated: '2026-08-29'
+method: derived
+source: >-
+  Documented response shapes in skills/reference/crawl4ai-endpoints.md,
+  https://gate.crawl4ai.com/docs, https://gate.crawl4ai.com/llms.txt, and the
+  tool inputSchemas in mcp/crawl4ai-mcp-tools.json
+provider: Crawl4AI
+providerId: crawl4ai
+description: >-
+  Entity graph derived from Crawl4AI's published response shapes. There is no
+  OpenAPI components.schemas to walk for either live surface, so every entity
+  below is reconstructed from documented JSON examples and field tables — field
+  names are verbatim, cardinalities are inferred from the documented shape.
+caveat: >-
+  DERIVED, NOT HARVESTED. No $ref graph exists to validate this against. Types
+  are read from the docs' own type columns where stated and left unset where not.
+entities:
+  - name: ScrapeResult
+    description: One page fetched and cleaned.
+    surface: 'POST /scrape (gate)'
+    fields:
+      - {name: ok, type: boolean}
+      - {name: markdown, type: string}
+      - {name: html, type: string}
+      - {name: content_hash, type: string, note: 'Stable digest of the content; the natural dedup key.'}
+      - {name: ms, type: integer, note: Elapsed milliseconds.}
+      - {name: links, type: object, conditional: 'parse.links'}
+      - {name: media, type: object, conditional: 'parse.media'}
+      - {name: metadata, type: object, conditional: 'parse.metadata'}
+      - {name: tables, type: array, conditional: 'parse.tables'}
+  - name: CrawlResponse
+    description: The full v1 crawl payload — the richest entity in the model.
+    surface: 'POST /v1/crawl, POST /v1/markdown (api)'
+    fields:
+      - {name: success, type: boolean}
+      - {name: url, type: string}
+      - {name: markdown, type: string}
+      - {name: fit_markdown, type: string}
+      - {name: fit_html, type: string}
+      - {name: html, type: string}
+      - {name: cleaned_html, type: string}
+      - {name: links, type: object}
+      - {name: media, type: object}
+      - {name: metadata, type: object}
+      - {name: tables, type: array}
+      - {name: screenshot, type: string, note: base64}
+      - {name: pdf, type: string, note: base64}
+      - {name: extracted_content, type: object}
+      - {name: duration_ms, type: integer}
+      - {name: usage, type: object}
+      - {name: error_message, type: 'string|null'}
+  - name: Usage
+    description: Inline credit accounting returned with every v1 response.
+    fields:
+      - {name: credits_used, type: integer}
+      - {name: credits_remaining, type: integer}
+  - name: LlmUsage
+    description: Token accounting on LLM-backed extraction.
+    fields:
+      - {name: prompt_tokens, type: integer}
+      - {name: completion_tokens, type: integer}
+      - {name: total_tokens, type: integer}
+  - name: ExtractResult
+    surface: 'POST /extract (gate), POST /v1/extract (api)'
+    fields:
+      - {name: ok, type: boolean}
+      - {name: success, type: boolean}
+      - {name: url, type: string}
+      - {name: data, type: array, note: 'Records matching the caller-supplied JSON Schema.'}
+      - {name: method_used, type: string, enum: [css_schema, llm]}
+      - {name: schema_used, type: object, note: 'Reusable — feed it back as `schema` to skip re-analysis.'}
+      - {name: query_used, type: string}
+      - {name: llm_usage, type: object}
+      - {name: duration_ms, type: integer}
+      - {name: error_message, type: 'string|null'}
+  - name: SearchResult
+    surface: 'GET /search (gate)'
+    fields:
+      - {name: title, type: string}
+      - {name: url, type: string}
+      - {name: snippet, type: string}
+  - name: RichBlock
+    description: 'Optional on-page extras, returned only with rich=1.'
+    surface: 'GET /search?rich=1'
+    fields:
+      - {name: follow_up_questions, type: 'array[string]'}
+      - {name: related_queries, type: 'array[string]'}
+      - {name: entity, type: object}
+      - {name: videos, type: 'array[{title,url}]'}
+      - {name: news, type: 'array[{title,url}]'}
+      - {name: discussions, type: 'array[{title,url}]'}
+      - {name: did_you_mean, type: string}
+  - name: EntityCard
+    surface: 'rich.entity'
+    fields:
+      - {name: title, type: string}
+      - {name: subtitle, type: string}
+      - {name: description, type: string}
+      - {name: facts, type: array}
+  - name: AnswerResult
+    surface: 'GET /answer (gate)'
+    experimental: true
+    fields:
+      - {name: answered, type: boolean}
+      - {name: answer, type: object}
+      - {name: experimental, type: boolean}
+  - name: Answer
+    fields:
+      - {name: kind, type: string, enum: [generated]}
+      - {name: text, type: string}
+      - {name: sources, type: 'array[{title,url}]'}
+  - name: Job
+    description: An async batch of URLs.
+    surface: 'POST /scrape/jobs (gate), POST /v1/*/async (api)'
+    fields:
+      - {name: job_id, type: string, note: 'gate prefix j_; self-hosted task_id prefix crawl_'}
+      - {name: status, type: string, enum: [pending, running, done, completed, partial, failed, cancelled]}
+      - {name: urls_count, type: integer}
+      - {name: progress, type: object}
+      - {name: progress_percent, type: integer}
+      - {name: results, type: array}
+      - {name: download_url, type: string}
+      - {name: error, type: 'string|null'}
+      - {name: created_at, type: string, format: date-time}
+      - {name: started_at, type: string, format: date-time}
+      - {name: completed_at, type: string, format: date-time}
+      - {name: priority, type: integer, note: '1-10, 1 = highest, default 5 (v1 only)'}
+  - name: JobProgress
+    fields:
+      - {name: total, type: integer}
+      - {name: completed, type: integer}
+      - {name: failed, type: integer}
+  - name: JobResultLine
+    description: One NDJSON line from a batch or job results stream.
+    fields:
+      - {name: url, type: string}
+      - {name: ok, type: boolean}
+      - {name: result, type: object}
+      - {name: error, type: string}
+  - name: MapResult
+    surface: 'POST /v1/map (api)'
+    fields:
+      - {name: success, type: boolean}
+      - {name: domain, type: string}
+      - {name: total_urls, type: integer}
+      - {name: hosts_found, type: integer}
+      - {name: mode, type: string, enum: [default, deep]}
+      - {name: urls, type: 'array[DiscoveredUrl]'}
+      - {name: duration_ms, type: integer}
+  - name: DiscoveredUrl
+    fields:
+      - {name: url, type: string}
+      - {name: host, type: string}
+      - {name: status, type: string}
+      - {name: relevance_score, type: number, note: 'BM25 against the optional query.'}
+      - {name: head_data, type: object}
+  - name: ProxyConfig
+    fields:
+      - {name: mode, type: string, enum: ['off', 'on', crawl4ai]}
+      - {name: country, type: string, note: ISO-2 exit country.}
+  - name: WebhookEvent
+    surface: webhook callback
+    fields:
+      - {name: task_id, type: string}
+      - {name: task_type, type: string}
+      - {name: status, type: string}
+      - {name: timestamp, type: string, format: date-time}
+      - {name: urls, type: 'array[string]'}
+relationships:
+  - {from: Job, to: JobResultLine, type: has_many, via: results}
+  - {from: Job, to: JobProgress, type: has_one, via: progress}
+  - {from: Job, to: WebhookEvent, type: has_many, via: task_id}
+  - {from: JobResultLine, to: CrawlResponse, type: has_one, via: result}
+  - {from: CrawlResponse, to: Usage, type: has_one, via: usage}
+  - {from: ExtractResult, to: LlmUsage, type: has_one, via: llm_usage}
+  - {from: AnswerResult, to: Answer, type: has_one, via: answer}
+  - {from: SearchResult, to: RichBlock, type: has_one, via: rich}
+  - {from: RichBlock, to: EntityCard, type: has_one, via: entity}
+  - {from: MapResult, to: DiscoveredUrl, type: has_many, via: urls}
+  - {from: ScrapeResult, to: ProxyConfig, type: belongs_to, via: proxy}
+id_prefixes:
+  - {prefix: 'sk_live_', entity: ApiKey}
+  - {prefix: 'j_', entity: Job, surface: gate}
+  - {prefix: 'crawl_', entity: Job, surface: self-hosted}
+observation: >-
+  The model has no persistent, addressable customer-owned resources beyond Job and
+  (self-hosted) artifact ids — Crawl4AI stores results, not accounts of objects.
+  content_hash is the only stable identity a crawled page carries.
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com

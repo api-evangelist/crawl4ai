@@ -4,86 +4,167 @@ schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main
 provider: Crawl4AI
 providerId: crawl4ai
 created: '2026-05-04'
-# Provenance stamped 2026-08-11: this artifact was written by the API Evangelist
-# bulk sweep dated 2026-05-04, not harvested from the provider. See roadmap#35.
-method: generated
-modified: '2026-05-04'
+generated: '2026-08-29'
+modified: '2026-08-29'
+method: searched
+source: >-
+  https://gate.crawl4ai.com/ (#pricing), https://gate.crawl4ai.com/llms.txt, and
+  the provider-published error reference at skills/reference/crawl4ai-errors.md
+supersedes: >-
+  The 2026-05-04 bulk-sweep scaffold that previously occupied this file. Its
+  free/professional/enterprise tiers and its 1,000 / 100,000 request quotas were
+  invented defaults and did not match anything Crawl4AI publishes; every value
+  below is read from the provider.
 tags:
   - AI Automation
   - Web Crawling
   - Rate Limiting
   - Quotas
-  - Throttling
-description: Machine-readable rate limit definitions for the Crawl4AI API surface. Captures per-tier quotas,
-  burst behavior, response signaling, and recovery semantics. Defaults are scaffold values to be replaced
-  with published provider limits.
+description: >-
+  Published Crawl4AI rate limits and the runtime headers the API returns. Limits
+  are enforced on two axes at once — a per-minute request rate and a monthly
+  per-capability quota (search and scrape have separate buckets) — plus a storage
+  allowance surfaced in its own headers.
 headers:
   limit: X-RateLimit-Limit
   remaining: X-RateLimit-Remaining
   reset: X-RateLimit-Reset
-  retryAfter: Retry-After
-  policy: RateLimit-Policy
+  storage_used: X-Storage-Used-MB
+  storage_remaining: X-Storage-Remaining-MB
+header_semantics:
+  X-RateLimit-Limit: Requests allowed per minute.
+  X-RateLimit-Remaining: Requests left in this window.
+  X-RateLimit-Reset: SECONDS until the limit resets (not a unix timestamp).
+  X-Storage-Used-MB: Storage consumed.
+  X-Storage-Remaining-MB: Storage left.
+header_note: >-
+  The provider states "Every response includes" these headers. Not independently
+  observed on a live response — every endpoint returns 401 with a zero-length body
+  and no rate-limit headers before authentication, so this row is searched, not probed.
 responseCodes:
   throttled: 429
   quotaExceeded: 429
   serviceUnavailable: 503
+  gatewayTimeout: 504
 limits:
   - tier: free
-    name: Free Tier Default
+    name: Free per-minute request rate
     scope: api-key
     metric: requests_per_minute
     limit: 10
-    burst: 20
     timeFrame: minute
-    applies:
-      - Crawl4AI
+    applies: [Crawl4AI Cloud v1 API]
+    source: skills/reference/crawl4ai-errors.md
   - tier: free
-    name: Free Tier Monthly Quota
+    name: Free daily crawl limit
     scope: api-key
-    metric: requests_per_month
-    limit: 1000
-    timeFrame: month
-    applies:
-      - Crawl4AI
-  - tier: professional
-    name: Professional Tier Default
+    metric: requests_per_day
+    limit: 100
+    timeFrame: day
+    applies: [Crawl4AI Cloud v1 API]
+    source: skills/reference/crawl4ai-errors.md
+  - tier: pro
+    name: Pro per-minute request rate
     scope: api-key
     metric: requests_per_minute
     limit: 100
-    burst: 200
     timeFrame: minute
-    applies:
-      - Crawl4AI
-  - tier: professional
-    name: Professional Tier Monthly Quota
+    applies: [Crawl4AI Cloud v1 API]
+    source: skills/reference/crawl4ai-errors.md
+  - tier: pro
+    name: Pro daily crawl limit
     scope: api-key
-    metric: requests_per_month
-    limit: 100000
+    metric: requests_per_day
+    limit: 10000
+    timeFrame: day
+    applies: [Crawl4AI Cloud v1 API]
+    source: skills/reference/crawl4ai-errors.md
+  - tier: community
+    name: Community monthly web search quota
+    scope: account
+    metric: searches_per_month
+    limit: 5000
     timeFrame: month
-    applies:
-      - Crawl4AI
-  - tier: enterprise
-    name: Enterprise Negotiated Limit
-    scope: contract
-    metric: requests_per_minute
+    applies: [Crawl4AI Cloud API]
+    source: 'https://gate.crawl4ai.com/ #pricing'
+  - tier: community
+    name: Community monthly scrape quota
+    scope: account
+    metric: scrapes_per_month
     limit: 1000
-    burst: 5000
-    timeFrame: minute
-    applies:
-      - Crawl4AI
+    timeFrame: month
+    applies: [Crawl4AI Cloud API]
+    source: 'https://gate.crawl4ai.com/ #pricing'
+  - tier: supporter
+    name: Supporter monthly web search quota
+    scope: account
+    metric: searches_per_month
+    limit: 30000
+    timeFrame: month
+    applies: [Crawl4AI Cloud API]
+    source: 'https://gate.crawl4ai.com/ #pricing'
+  - tier: supporter
+    name: Supporter monthly scrape quota
+    scope: account
+    metric: scrapes_per_month
+    limit: 5000
+    timeFrame: month
+    applies: [Crawl4AI Cloud API]
+    source: 'https://gate.crawl4ai.com/ #pricing'
+request_shape_caps:
+  - name: Batch scrape URLs per call
+    limit: 50
+    endpoint: 'POST /scrape/batch'
+  - name: Async job URLs per submission
+    limit: 10000
+    endpoint: 'POST /scrape/jobs'
+  - name: Job results page size
+    limit: 500
+    endpoint: 'GET /scrape/jobs/{id}/results?after=N'
+  - name: Search query length
+    limit: 512
+    unit: characters
+    endpoint: 'GET /search, GET /answer'
+  - name: v1 async batch URLs per job
+    limit: 100
+    endpoint: 'POST /v1/{markdown,screenshot,extract,crawl}/async'
+  - name: Whole-site crawl pages
+    limit: 1000
+    endpoint: 'POST /v1/crawl/site (max_pages, default 20)'
+cost_multipliers:
+  note: >-
+    Proxy mode multiplies the credit cost per page — this is a real rate control,
+    not just pricing.
+  modes:
+    - mode: 'off'
+      credits_per_page: 1
+    - mode: 'on'
+      credits_per_page: 5
+      description: Residential proxy, optional ISO-2 country.
+    - mode: crawl4ai
+      credits_per_page: 10
+      description: Crawl4AI Web-Unlocker proxy for hard / anti-bot sites.
+  source: skills/reference/crawl4ai-endpoints.md
 policies:
-  - name: Backoff Strategy
-    description: Clients should implement exponential backoff with jitter, honoring the Retry-After header
-      when present.
-  - name: Burst Handling
-    description: Short bursts above the steady-state limit are tolerated up to the documented burst ceiling
-      before throttling engages.
-  - name: Quota Reset
-    description: Monthly quotas reset at the start of each calendar month in UTC. Per-minute and per-second
-      windows reset on a sliding-window basis.
-  - name: Fair Use
-    description: Even on uncapped enterprise tiers, sustained usage that materially impacts shared infrastructure
-      may be subject to fair-use throttling.
+  - name: Retry on exhaustion
+    description: >-
+      Published guidance: on 429 wait X-RateLimit-Reset seconds then retry; on 503
+      retry after 5s up to 3 attempts; on 5xx retry once after 2s.
+  - name: Fair use
+    description: >-
+      "Fair use: each plan has request/concurrency limits (see the dashboard);
+      over-limit calls get 429." Concurrency limits are per-plan and published only
+      inside the authenticated dashboard.
+  - name: Self-hosted caps
+    description: >-
+      The self-hosted Docker server caps request body size, per-crawl wall clock,
+      job-queue size and per-principal concurrency since 0.9.0; all are operator-
+      configurable and 0 means unbounded.
+limit_count: 8
+undocumented:
+  - Per-plan concurrency ceilings (dashboard-only).
+  - >-
+    Whether the gate and v1 surfaces share one quota bucket or hold separate ones.
 maintainers:
   - FN: Kin Lane
     email: kin@apievangelist.com

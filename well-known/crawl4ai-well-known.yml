@@ -1,0 +1,139 @@
+generated: '2026-08-29'
+method: probed
+source: live HTTP probes of every Crawl4AI host, 2026-08-29
+provider: Crawl4AI
+providerId: crawl4ai
+description: >-
+  Probe record for the RFC 8615 /.well-known/ surface on every Crawl4AI host.
+  RESULT: NOTHING IS SERVED. No security.txt, no api-catalog, no OAuth or OpenID
+  discovery, no agent card, on any host. No WellKnown, SecurityTxt or AgentCard
+  pointer is emitted in apis.yml, because this file records an absence.
+note: >-
+  Two false-positive shapes were ruled out. crawl4ai.com 301s every path to
+  docs.crawl4ai.com, which answers a 404 with a 31KB MkDocs HTML page — a 404
+  body, not a document. api.crawl4ai.com is a single-page app whose catch-all
+  answers HTTP 200 with the same 696-byte HTML shell for every /.well-known/*
+  path, including agent-card.json and agent.json; those 200s are counted as
+  MISSES, not hits, per the STEP 0b agent-card rule. Only two paths on that host
+  return real JSON, and both are 404s.
+hosts:
+  - host: crawl4ai.com
+    note: 301 redirect to docs.crawl4ai.com on every path
+    documents:
+      - path: /.well-known/security.txt
+        status: 404
+        file: null
+      - path: /.well-known/openid-configuration
+        status: 404
+        file: null
+      - path: /.well-known/oauth-authorization-server
+        status: 404
+        file: null
+      - path: /.well-known/api-catalog
+        status: 404
+        file: null
+      - path: /.well-known/ai-plugin.json
+        status: 404
+        file: null
+      - path: /.well-known/agent-card.json
+        status: 404
+        file: null
+      - path: /.well-known/agent.json
+        status: 404
+        file: null
+  - host: docs.crawl4ai.com
+    note: MkDocs documentation site; 404 body is a 31,608-byte HTML page
+    documents:
+      - path: /.well-known/security.txt
+        status: 404
+        file: null
+      - path: /.well-known/openid-configuration
+        status: 404
+        file: null
+      - path: /.well-known/oauth-authorization-server
+        status: 404
+        file: null
+      - path: /.well-known/api-catalog
+        status: 404
+        file: null
+      - path: /.well-known/ai-plugin.json
+        status: 404
+        file: null
+      - path: /.well-known/agent-card.json
+        status: 404
+        file: null
+      - path: /.well-known/agent.json
+        status: 404
+        file: null
+  - host: gate.crawl4ai.com
+    note: >-
+      The live Crawl4AI Cloud API host. Returns a genuine zero-length 404 on every
+      /.well-known/ path — no SPA shell, so these are unambiguous absences. It DOES
+      serve a real /llms.txt (200, 7,822 bytes, captured in llms/) and a live MCP
+      endpoint at /mcp, neither of which lives under /.well-known/.
+    documents:
+      - path: /.well-known/security.txt
+        status: 404
+        file: null
+      - path: /.well-known/openid-configuration
+        status: 404
+        file: null
+      - path: /.well-known/oauth-authorization-server
+        status: 404
+        file: null
+      - path: /.well-known/oauth-protected-resource
+        status: 404
+        file: null
+      - path: /.well-known/api-catalog
+        status: 404
+        file: null
+      - path: /.well-known/ai-plugin.json
+        status: 404
+        file: null
+      - path: /.well-known/agent-card.json
+        status: 404
+        file: null
+      - path: /.well-known/agent.json
+        status: 404
+        file: null
+  - host: api.crawl4ai.com
+    note: >-
+      SPA catch-all. Every path below marked status 200 returned the identical
+      696-byte text/html application shell, NOT a document — treated as a miss.
+    documents:
+      - path: /.well-known/security.txt
+        status: 200
+        file: null
+        content_type: text/html
+        verdict: html-shell-not-a-document
+      - path: /.well-known/openid-configuration
+        status: 404
+        file: null
+        content_type: application/json
+      - path: /.well-known/oauth-authorization-server
+        status: 404
+        file: null
+        content_type: application/json
+      - path: /.well-known/api-catalog
+        status: 200
+        file: null
+        content_type: text/html
+        verdict: html-shell-not-a-document
+      - path: /.well-known/ai-plugin.json
+        status: 200
+        file: null
+        content_type: text/html
+        verdict: html-shell-not-a-document
+      - path: /.well-known/agent-card.json
+        status: 200
+        file: null
+        content_type: text/html
+        verdict: html-shell-not-a-document
+      - path: /.well-known/agent.json
+        status: 200
+        file: null
+        content_type: text/html
+        verdict: html-shell-not-a-document
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com

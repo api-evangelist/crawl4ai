@@ -1,0 +1,142 @@
+generated: '2026-08-29'
+method: searched
+source: >-
+  https://github.com/unclecode/crawl4ai/blob/main/CHANGELOG.md,
+  https://api.github.com/repos/unclecode/crawl4ai/releases,
+  https://gate.crawl4ai.com/legal/, https://unclecode.github.io/crawl4ai-status/
+provider: Crawl4AI
+providerId: crawl4ai
+description: >-
+  Versioning, deprecation and operational-status posture for Crawl4AI. The
+  open-source library has an exemplary Keep-a-Changelog record with explicit
+  breaking-change and migration sections; the two hosted APIs have neither a
+  version scheme announcement nor a changelog of their own.
+versioning:
+  library:
+    scheme: semver
+    declared: >-
+      "The format is based on Keep a Changelog, and this project adheres to
+      Semantic Versioning."
+    current: 0.9.2
+    released: '2026-07-15'
+    source: https://github.com/unclecode/crawl4ai/blob/main/CHANGELOG.md
+  cloud_api_gate:
+    scheme: unversioned
+    note: >-
+      gate.crawl4ai.com paths carry no version segment (/scrape, /search,
+      /answer, /extract, /scrape/batch, /scrape/jobs). No version header, no
+      published version policy. /answer is explicitly labelled experimental with
+      "the shape may change as we improve it".
+  cloud_api_v1:
+    scheme: url-path
+    current: v1
+    note: 'api.crawl4ai.com paths are prefixed /v1/. No v2 or sunset notice published.'
+deprecation_policy:
+  published: true
+  form: release-notes + migration guide
+  note: >-
+    Crawl4AI does not publish a standing deprecation POLICY document, but it does
+    publish per-release breaking-change sections and a dedicated migration guide,
+    which is how it actually communicates removals. RFC 8594 Sunset/Deprecation
+    headers are NOT used on any surface.
+  migration_guide: https://github.com/unclecode/crawl4ai/blob/main/deploy/docker/MIGRATION.md
+  examples:
+    - version: 0.9.0
+      date: '2026-06-18'
+      scope: Self-hosted Docker API server only; the pip library is unaffected.
+      breaking:
+        - Authentication on by default; loopback bind without CRAWL4AI_API_TOKEN.
+        - All pre-0.9.0 JWTs invalidated; re-mint via POST /token.
+        - >-
+          Request trust boundary — js_code, c4a_script, proxy/proxy_config,
+          extra_args, user_data_dir, cdp_url, cookies, headers, init_scripts,
+          base_url, deep_crawl_strategy, simulate_user, magic, process_in_browser
+          and nested LLM config are rejected with HTTP 400 over the network.
+        - 'hooks.code removed, replaced by a fixed declarative action set (GET /hooks/info).'
+        - >-
+          output_path removed from /screenshot and /pdf; replaced by artifact_id +
+          authenticated GET /artifacts/{artifact_id} under TTL and quota.
+        - 'LLM base_url removed from /md, /llm, /llm/job.'
+        - 'Monitor mutations require an admin-scope principal.'
+        - 'CORS deny-by-default; TLS verification on; Redis requires a password.'
+        - '5xx responses are now generic {"error","correlation_id"}.'
+    - version: 0.8.9
+      date: '2026-06-04'
+      scope: Backward compatible security patch (SSRF via proxy settings, CWE-918).
+  deprecated_fields_still_accepted:
+    - field: proxy mode values
+      note: >-
+        'none' -> off, 'residential'/'datacenter'/'auto' -> on, legacy
+        use_proxy:true -> on. sticky_session and skip_direct are accepted but
+        no-op. Documented back-compat, no removal date given.
+    - field: browser_config.base_url
+      note: 'Still accepted on LLM endpoints but no longer honored (0.8.8 hardening).'
+support_window:
+  published: true
+  source: https://github.com/unclecode/crawl4ai/blob/main/SECURITY.md
+  note: >-
+    SECURITY.md's supported-versions table still names 0.8.x as supported and
+    0.7.x as "upgrade recommended" — it has not been refreshed since 0.9.x
+    shipped, so the stated support window trails the actual release line.
+status_page:
+  present: true
+  url: https://unclecode.github.io/crawl4ai-status/
+  canonical_url: https://status.crawl4ai.com
+  engine: Upptime
+  repository: https://github.com/unclecode/crawl4ai-status
+  open_source: true
+  windows: [24h, 7d, 30d, 1y, all]
+  defect:
+    finding: >-
+      The branded hostname is BROKEN. status.crawl4ai.com resolves to
+      unclecode.github.io but the TLS certificate presented is CN=*.github.io with
+      no SAN for status.crawl4ai.com, so every HTTPS request fails the handshake
+      (curl exit 60, probed 2026-08-29). Only the unbranded
+      unclecode.github.io/crawl4ai-status/ URL loads (HTTP 200). Fix: enable the
+      GitHub Pages custom domain + "Enforce HTTPS" for status.crawl4ai.com.
+    checked: '2026-08-29'
+sla:
+  published: false
+  note: >-
+    No SLA on any public tier. Terms of Service §7 disclaims availability
+    entirely: services are "as is" and "as available", with liability capped at
+    the greater of six months of fees or USD 100. An SLA is named as an Enterprise
+    tier feature ("Volume, dedicated regions, SLA, private archive") but its terms
+    are not published.
+  enterprise_sla_offered: true
+incident_history:
+  source: https://unclecode.github.io/crawl4ai-status/
+  note: 'Upptime-generated; live status only, no written post-mortems published.'
+releases:
+  recent:
+    - {version: 0.9.2, date: '2026-07-15'}
+    - {version: 0.9.1, date: '2026-07-08'}
+    - {version: 0.9.0, date: '2026-06-18'}
+    - {version: 0.8.9, date: '2026-06-04'}
+    - {version: 0.8.8, date: '2026-06-04'}
+    - {version: 0.8.7, date: '2026-06-01'}
+    - {version: 0.8.5, date: '2026-03-18'}
+    - {version: 0.8.0, date: '2026-01-16'}
+operational_findings:
+  - finding: >-
+      The TLS certificate on gate.crawl4ai.com — the production Cloud API host —
+      and on api.crawl4ai.com expires 2026-09-06, eight days after this probe.
+      Recorded from the live handshake on 2026-08-29 (see
+      security/crawl4ai-domain-security.yml). Presumed auto-renewing, but noted
+      because both hosts share the certificate.
+    checked: '2026-08-29'
+  - finding: >-
+      No HSTS on crawl4ai.com, gate.crawl4ai.com or api.crawl4ai.com, and no CAA
+      or DNSSEC on crawl4ai.com. SPF and DMARC are present, with DMARC policy
+      p=none (monitor only).
+    checked: '2026-08-29'
+retired_surfaces:
+  - name: Crawl4AI Platform (Zuplo gateway)
+    contract: openapi/crawl4ai-platform-gateway-openapi.json
+    evidence: >-
+      POST https://gate.crawl4ai.com/crawl/job returns 404 (probed 2026-08-29);
+      the source repository unclecode/crawl4ai-platform-production was last pushed
+      2025-11-02. No deprecation notice was ever published for it.
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com

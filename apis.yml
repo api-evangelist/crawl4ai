@@ -1,64 +1,230 @@
 aid: crawl4ai
 name: Crawl4AI
 description: >-
-  Crawl4AI is an open-source web crawling tool optimized for feeding web content into large language models.
+  Crawl4AI is an open-source, Apache-2.0 web crawler and scraper built to turn any
+  URL into clean, LLM-ready data — Markdown, typed JSON, screenshots, PDFs, or a
+  map of every URL on a domain. Operated by CONTEXT4AI PTE LTD of Singapore and
+  created by Hossein Tohidi (@unclecode), the project pairs a 79,000-star Python
+  library and self-hostable Docker API server with a hosted Cloud API at
+  gate.crawl4ai.com that serves scrape, search, answer, extract and bulk-job
+  endpoints from three regions, plus a live remote MCP server that exposes the
+  same capabilities to agents as five native tools. Self-hosting is free and
+  unmetered; the hosted tier is free at 5,000 searches and 1,000 scrapes a month.
 type: Index
 deliveryModel:
-  model: unknown
-  open_source: false
-  commercial: false
-  callable_host: false
-  label: Delivery model not determined — needs a product licence on record
-  confidence: low
+  model: open-source-and-hosted
+  open_source: true
+  commercial: true
+  callable_host: true
+  label: 'Apache-2.0 open source, plus a hosted commercial API'
+  confidence: high
   source:
-  - none
-  generated: '2026-08-28'
-  method: derived
+    - https://pypi.org/project/crawl4ai/
+    - https://gate.crawl4ai.com/
+    - 'https://gate.crawl4ai.com/legal/#terms'
+  generated: '2026-08-29'
+  method: searched
 accessModel:
   pricing: freemium
-  onboarding: unknown
-  trial: false
-  try_now: false
-  public: false
-  label: Freemium
-  confidence: medium
+  onboarding: self-service
+  trial: true
+  try_now: true
+  public: true
+  label: 'Freemium — instant 24-hour key, no signup; $7/mo Supporter tier'
+  confidence: high
   source:
-  - plans
-  generated: '2026-07-22'
-  method: derived
+    - 'https://gate.crawl4ai.com/ (#pricing)'
+    - https://gate.crawl4ai.com/llms.txt
+  generated: '2026-08-29'
+  method: searched
 image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/crawl4ai.png
 tags:
   - AI Automation
   - Web Crawling
+  - Web Scraping
+  - Data Extraction
+  - Search
+  - LLM Tooling
+  - Agents
+  - MCP
+  - Open Source
 url: >-
   https://raw.githubusercontent.com/api-evangelist/crawl4ai/refs/heads/main/apis.yml
 created: '2026-03-27'
-modified: '2026-03-27'
+modified: '2026-08-29'
 specificationVersion: '0.23'
 apis:
   - aid: crawl4ai:crawl4ai
-    name: Crawl4AI
+    name: Crawl4AI Cloud API
     description: >-
-      Crawl4AI is an open-source web crawling tool optimized for feeding web content into large language models.
-    humanURL: https://crawl4ai.com
+      The hosted Crawl4AI API. One key, plain JSON, one fast endpoint per job:
+      POST /scrape turns a URL into clean Markdown or HTML, GET /search runs a
+      browser-free multi-engine web search, GET /answer returns a direct answer
+      with sources (experimental), POST /extract pulls typed JSON out of a page
+      with an instruction and/or JSON Schema, POST /scrape/batch streams up to 50
+      URLs as NDJSON, and POST /scrape/jobs drains lists of up to 10,000 URLs in
+      the background. Requests route to the nearest of three regions (EU,
+      Singapore, US). No OpenAPI is published for this surface.
+    humanURL: https://gate.crawl4ai.com/docs
+    baseURL: https://gate.crawl4ai.com
     tags:
       - AI Automation
+      - Web Crawling
+      - Search
     properties:
       - type: Documentation
-        url: https://docs.crawl4ai.com
+        url: https://gate.crawl4ai.com/docs
+      - type: APIReference
+        url: https://gate.crawl4ai.com/docs
+      - type: LLMsTxt
+        url: llms/crawl4ai-llms.txt
+      - type: MCPServer
+        url: mcp/crawl4ai-mcp.yml
+      - type: ToolCrosswalk
+        url: mcp/crawl4ai-tool-crosswalk.yml
+  - aid: crawl4ai:crawl4ai-v1
+    name: Crawl4AI Cloud v1 API
+    description: >-
+      The versioned Crawl4AI cloud surface the first-party Cloud SDKs and the
+      Claude Code plugin call. Covers POST /v1/markdown, /v1/screenshot (screenshot
+      and PDF capture), /v1/extract (auto, LLM or reusable CSS schema), /v1/map
+      (domain URL discovery with BM25 relevance scoring), /v1/crawl/site
+      (whole-site crawl up to 1,000 pages) and /v1/crawl (the full 40-field
+      CrawlerRunConfig), each with an async variant, a job API and webhook
+      callbacks. Authenticated with X-API-Key. No OpenAPI is published; the
+      reference lives in the provider's own agent skill.
+    humanURL: >-
+      https://github.com/unclecode/crawl4ai-cloud-sdk/blob/main/python/claude-plugin/skills/crawl4ai/reference/endpoints.md
+    baseURL: https://api.crawl4ai.com
+    tags:
+      - AI Automation
+      - Web Crawling
+      - Data Extraction
+    properties:
+      - type: APIReference
+        url: skills/reference/crawl4ai-endpoints.md
+      - type: ErrorCatalog
+        url: skills/reference/crawl4ai-errors.md
+      - type: SourceCode
+        url: https://github.com/unclecode/crawl4ai-cloud-sdk
+  - aid: crawl4ai:crawl4ai-docker
+    name: Crawl4AI Self-Hosted API
+    description: >-
+      The Apache-2.0 API server that ships inside the crawl4ai project and the
+      unclecode/crawl4ai Docker image, serving on port 11235 on infrastructure the
+      operator runs. Exposes /crawl, /crawl/stream, /crawl/job, /md, /llm,
+      /screenshot, /pdf, /html, /token, /health, /artifacts/{id}, /hooks/info, a
+      monitoring API and an MCP bridge at /mcp/sse, /mcp/ws and /mcp/schema. Since
+      0.9.0 it is secure-by-default: authentication on, loopback bind without a
+      token, and a strict request trust boundary.
+    humanURL: https://docs.crawl4ai.com/core/self-hosting/
+    baseURL: 'http://{host}:11235'
+    baseURLNote: >-
+      Templated on purpose — this server runs on the customer's own host. Crawl4AI
+      operates no instance of it.
+    tags:
+      - AI Automation
+      - Web Crawling
+      - Open Source
+    properties:
+      - type: Documentation
+        url: https://docs.crawl4ai.com/core/self-hosting/
+      - type: SourceCode
+        url: https://github.com/unclecode/crawl4ai/tree/main/deploy/docker
+      - type: ContainerImage
+        url: https://hub.docker.com/r/unclecode/crawl4ai
 common:
-  - type: DomainSecurity
-    url: security/crawl4ai-domain-security.yml
-  - type: LinkedIn
-    url: https://www.linkedin.com/company/crawl4ai
   - type: Website
     url: https://crawl4ai.com
+  - type: DeveloperPortal
+    url: https://gate.crawl4ai.com/
   - type: Documentation
     url: https://docs.crawl4ai.com
+  - type: APIReference
+    url: https://gate.crawl4ai.com/docs
+  - type: GettingStarted
+    url: https://docs.crawl4ai.com/core/quickstart/
+  - type: Blog
+    url: https://docs.crawl4ai.com/blog/
+  - type: Support
+    url: https://discord.gg/jP8KfhDhyN
+  - type: GitHubOrganization
+    url: https://github.com/unclecode
+  - type: SourceCode
+    url: https://github.com/unclecode/crawl4ai
+  - type: Roadmap
+    url: https://github.com/unclecode/crawl4ai/blob/main/ROADMAP.md
+  - type: LinkedIn
+    url: https://www.linkedin.com/company/crawl4ai
   - type: Integrations
     url: https://docs.crawl4ai.com/marketplace/
+  - type: Pricing
+    url: 'https://gate.crawl4ai.com/#pricing'
+  - type: SignUp
+    url: https://gate.crawl4ai.com/dashboard/
+  - type: TermsOfService
+    url: 'https://gate.crawl4ai.com/legal/#terms'
+  - type: PrivacyPolicy
+    url: 'https://gate.crawl4ai.com/legal/#privacy'
+  - type: StatusPage
+    url: https://unclecode.github.io/crawl4ai-status/
+  - type: Plans
+    url: plans/crawl4ai-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/crawl4ai-rate-limits.yml
+  - type: FinOps
+    url: finops/crawl4ai-finops.yml
+  - type: OpenAPI
+    url: openapi/crawl4ai-platform-gateway-openapi.json
+  - type: Overlay
+    url: overlays/crawl4ai-platform-gateway-overlay.yaml
+  - type: LLMsTxt
+    url: llms/crawl4ai-llms.txt
+  - type: MCPServer
+    url: mcp/crawl4ai-mcp.yml
+  - type: ToolCrosswalk
+    url: mcp/crawl4ai-tool-crosswalk.yml
+  - type: AgentSkill
+    url: skills/_index.yml
+  - type: Packages
+    url: packages/crawl4ai-packages.yml
+  - type: SDKs
+    url: packages/crawl4ai-packages.yml
+  - type: CLI
+    url: cli/crawl4ai-cli.yml
+  - type: Authentication
+    url: authentication/crawl4ai-authentication.yml
+  - type: ErrorCatalog
+    url: errors/crawl4ai-problem-types.yml
+  - type: Conventions
+    url: conventions/crawl4ai-conventions.yml
+  - type: Conformance
+    url: conformance/crawl4ai-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/crawl4ai-lifecycle.yml
+  - type: Deprecation
+    url: lifecycle/crawl4ai-lifecycle.yml
+  - type: ChangeLog
+    url: changelog/crawl4ai-changelog.yml
+  - type: Webhooks
+    url: asyncapi/crawl4ai-webhooks.yml
+  - type: Sandbox
+    url: sandbox/crawl4ai-sandbox.yml
+  - type: DataModel
+    url: data-model/crawl4ai-data-model.yml
+  - type: DomainSecurity
+    url: security/crawl4ai-domain-security.yml
+  - type: VulnerabilityDisclosure
+    url: security/crawl4ai-vulnerability-disclosure.yml
+  - type: Security
+    url: security/crawl4ai-vulnerability-disclosure.yml
 integrations:
   - name: Crawl4AI
 maintainers:
   - FN: Kin Lane
     email: kin@apievangelist.com
+x-enrichment:
+  date: '2026-08-29'
+  status: enriched
+  artifacts_added: 27
+  pass: local-v1

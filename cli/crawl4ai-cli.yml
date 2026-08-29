@@ -1,0 +1,68 @@
+generated: '2026-08-29'
+method: searched
+source: 'https://docs.crawl4ai.com/core/cli/'
+provider: Crawl4AI
+providerId: crawl4ai
+name: crwl
+description: >-
+  Crawl4AI ships a first-party CLI, `crwl`, installed automatically with the
+  Python library. It drives the local crawler — not the Cloud API — and covers
+  crawling, extraction, content filtering and an LLM Q&A mode over crawled content.
+install:
+  - method: pip
+    command: pip install crawl4ai
+    note: 'The CLI "will be installed automatically when you install the library".'
+  - method: setup
+    command: crawl4ai-setup
+    note: 'Post-install browser/environment setup, referenced by the plugin switch skill.'
+binary: crwl
+package: 'pypi:crawl4ai (see packages/crawl4ai-packages.yml)'
+targets: local library
+commands:
+  - form: 'crwl <url>'
+    description: Basic crawl of a single URL.
+  - form: 'crwl <url> -o <format>'
+    description: 'Choose the output format: all | json | markdown/md | markdown-fit/md-fit.'
+  - form: 'crwl <url> -o json -v --bypass-cache'
+    description: Verbose JSON output with the cache bypassed.
+  - form: 'crwl --example'
+    description: Print usage examples.
+  - form: 'crwl <url> -B browser.yml | -b "headless=true,viewport_width=1280"'
+    description: 'Browser configuration, by YAML file or inline key=value.'
+  - form: 'crwl <url> -C crawler.yml | -c "css_selector=#main,scan_full_page=true"'
+    description: 'Crawler configuration, by YAML file or inline key=value.'
+  - form: 'crwl <url> -e extract_css.yml -s css_schema.json -o json'
+    description: 'CSS/XPath (json-css) structured extraction against a schema file.'
+  - form: 'crwl <url> -e extract_llm.yml -s llm_schema.json -o json'
+    description: LLM-based structured extraction against a JSON Schema.
+  - form: 'crwl <url> -f filter_bm25.yml -o markdown-fit'
+    description: 'Content filtering — bm25 or pruning strategy with a query and threshold.'
+  - form: 'crwl <url> -q "What is the main topic discussed?"'
+    description: LLM Q&A over the crawled content.
+flags:
+  - {flag: '-o', name: output, values: [all, json, markdown, md, markdown-fit, md-fit]}
+  - {flag: '-B', name: browser-config, type: yaml-file}
+  - {flag: '-b', name: browser-params, type: inline-kv}
+  - {flag: '-C', name: crawler-config, type: yaml-file}
+  - {flag: '-c', name: crawler-params, type: inline-kv}
+  - {flag: '-e', name: extraction-config, type: yaml-file}
+  - {flag: '-s', name: schema, type: json-file}
+  - {flag: '-f', name: filter-config, type: yaml-file}
+  - {flag: '-q', name: question, type: string}
+  - {flag: '-v', name: verbose}
+  - {flag: '--bypass-cache'}
+  - {flag: '--example'}
+config:
+  global_file: '~/.crawl4ai/global.yml'
+  note: >-
+    On first LLM use the CLI prompts for a provider and API token and stores them
+    in the global config. Any LiteLLM provider is supported; Ollama needs no token.
+cloud_cli:
+  present: false
+  note: >-
+    There is no CLI for the hosted Cloud API. The nearest first-party equivalents
+    are the Claude Code plugin scripts (crawl.py, poll-job.py, health.sh,
+    test-key.sh) shipped in crawl4ai-cloud-sdk, and the documented raw curl calls.
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com

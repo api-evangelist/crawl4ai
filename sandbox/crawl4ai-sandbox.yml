@@ -1,0 +1,81 @@
+generated: '2026-08-29'
+method: searched
+source: >-
+  https://gate.crawl4ai.com/ (playground + "Get a key"),
+  https://docs.crawl4ai.com/core/self-hosting/, https://gate.crawl4ai.com/health
+provider: Crawl4AI
+providerId: crawl4ai
+description: >-
+  Crawl4AI's try-before-you-buy surface is an in-page playground on the Cloud API
+  landing page plus an instantly-issued 24-hour key that needs no signup. There
+  is no separate sandbox HOST and no test/live key split — the playground and the
+  free key run against the same production API on real URLs.
+sandbox_host: none
+test_mode: none
+key_split:
+  present: false
+  note: >-
+    One key prefix, sk_live_, for every tier. No sk_test_ equivalent, so there is
+    no way to point an integration at a non-billing environment.
+surfaces:
+  - name: Cloud API playground
+    url: https://gate.crawl4ai.com/#playground
+    type: hosted-console
+    auth_required: false
+    note: >-
+      Interactive runner on the landing page for the scrape, extract, search and
+      answer endpoints — "Type a URL above and hit Run - real output renders here",
+      with a "Copy full command" affordance that emits the equivalent curl. The
+      page labels it "Live · play limits", i.e. it calls production under a
+      reduced allowance. Requires JavaScript; the page says so itself and points
+      non-JS readers at docs.crawl4ai.com.
+  - name: Play pass (24-hour key)
+    url: https://gate.crawl4ai.com/
+    type: instant-credential
+    auth_required: false
+    ttl: 24 hours
+    note: >-
+      "Get a free key: visit https://gate.crawl4ai.com/ and click 'Get a key' (a
+      24-hour key is issued instantly; verify your email to keep it)." The Terms
+      name it as a distinct tier: "a free Community tier, a 24-hour Play pass, and
+      a paid Supporter subscription."
+  - name: Anonymous health check
+    url: https://gate.crawl4ai.com/health
+    type: unauthenticated-endpoint
+    auth_required: false
+    probed: {status: 200, body: '{"ok":true}', date: '2026-08-29'}
+  - name: Anonymous MCP introspection
+    url: https://gate.crawl4ai.com/mcp
+    type: unauthenticated-endpoint
+    auth_required: false
+    note: >-
+      tools/list answers without a credential, so an agent can discover the full
+      tool surface and its input schemas before anyone signs up. tools/call is gated.
+  - name: Self-hosted playground
+    url: 'http://localhost:11235/playground'
+    type: self-hosted-console
+    auth_required: 'from 0.9.0, yes — the server binds loopback and requires a token'
+    note: >-
+      "Visit /playground to access the interactive testing interface" once the
+      Docker image is running. The whole self-hosted server is in effect a free,
+      unmetered sandbox for the crawler itself.
+  - name: Documentation LLM context builder
+    url: https://docs.crawl4ai.com/
+    type: docs-tool
+    note: >-
+      The docs site ships an "Ask AI" assistant and an "LLM Context Builder" for
+      assembling a context bundle from the documentation.
+test_fixtures:
+  published: false
+  note: >-
+    No test URLs, magic identifiers, fixture pages or trigger values are published
+    — appropriate for a crawler, whose input is the live public web. The docs'
+    own worked examples use https://example.com and https://news.ycombinator.com.
+  never_invent: >-
+    No test credentials or fixture values were authored for this file; Crawl4AI
+    publishes none.
+time_simulation:
+  present: false
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com

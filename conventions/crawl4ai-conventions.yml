@@ -1,0 +1,162 @@
+generated: '2026-08-29'
+method: searched
+source: >-
+  https://gate.crawl4ai.com/docs, https://gate.crawl4ai.com/llms.txt,
+  skills/reference/crawl4ai-endpoints.md, skills/reference/crawl4ai-errors.md,
+  https://docs.crawl4ai.com/core/self-hosting/
+provider: Crawl4AI
+providerId: crawl4ai
+description: >-
+  Cross-cutting runtime semantics an agent needs before calling Crawl4AI: auth
+  style, pagination, streaming, caching, error envelope, rate-limit signalling,
+  versioning, and what can and cannot be taken back.
+auth:
+  style: bearer-api-key
+  header: 'Authorization: Bearer sk_live_...'
+  alternate_header: 'x-api-key (gate) / X-API-Key (v1)'
+  scopes: none
+  detail: authentication/crawl4ai-authentication.yml
+versioning:
+  gate: 'unversioned paths; /answer explicitly labelled experimental and subject to shape change'
+  v1: 'URL-path /v1/'
+  headers: none
+  detail: lifecycle/crawl4ai-lifecycle.yml
+idempotency:
+  supported: false
+  header: null
+  scope: null
+  retention: null
+  finding: >-
+    NO idempotency mechanism is published on any Crawl4AI surface — no
+    Idempotency-Key header, no client-supplied request id, no documented
+    dedup window. The published retry guidance ("on 5xx retry once after 2s")
+    therefore instructs a client to re-send a billable request with no way for
+    the server to recognise it as the same one. On /scrape and /extract a
+    duplicate costs credits; on POST /scrape/jobs a duplicate can enqueue up to
+    10,000 URLs twice.
+  mitigations_available:
+    - >-
+      Server-side caching de-duplicates by URL in effect: "repeated URLs are
+      served from a shared archive" and every response carries content_hash plus
+      an engine/cache provenance marker, so a retried scrape of the same URL is
+      usually served from cache. This is a cost and consistency mitigation, not an
+      idempotency guarantee, and bypass_cache defeats it.
+  no_pointer_note: >-
+    Because idempotency is genuinely absent, NO `Idempotency` pointer is emitted
+    in apis.yml. Emitting one would credit Crawl4AI with a control it does not ship.
+pagination:
+  - surface: 'GET /scrape/jobs/{id}/results (gate)'
+    style: cursor-offset
+    params: ['after=N']
+    page_size: 500
+    note: '"paged with ?after=N (500 per page)"'
+  - surface: 'GET /v1/{markdown,screenshot,extract,crawl}/jobs (api)'
+    style: limit-offset
+    params: [limit, offset, status]
+    defaults: {limit: 20, offset: 0}
+    response_fields: [jobs, total, limit, offset]
+streaming:
+  media_type: application/x-ndjson
+  surfaces:
+    - 'POST /scrape/batch — one JSON line per URL as it finishes'
+    - 'GET /scrape/jobs/{id}/results — streamed NDJSON'
+  client_note: 'curl -N is the documented way to consume it line by line.'
+async_model:
+  submit: 'POST /scrape/jobs (gate, up to 10,000 URLs) | POST /v1/*/async (api, up to 100 URLs)'
+  poll: 'GET /scrape/jobs/{id} | GET /v1/*/jobs/{job_id}'
+  states: [pending, running, completed, partial, failed, cancelled]
+  progress: '{total, completed, failed} plus progress_percent'
+  push: 'webhook_url on submission — see asyncapi/crawl4ai-webhooks.yml'
+  priority: 'v1 only, integer 1-10, 1 = highest, default 5'
+caching:
+  default: 'on — repeated URLs are served from a shared archive'
+  bypass: 'bypass_cache: true (per request)'
+  ttl_known:
+    - 'POST /v1/map results cached 7 days; force:true bypasses'
+  provenance_fields: [content_hash, engine, cache]
+field_selection:
+  gate: 'parse: true | {links, media, metadata, tables}; format: both | md | html'
+  v1: 'include: ["links","media","metadata","tables"]; include_fields[] filters the response'
+  note: >-
+    Both surfaces let the caller shrink the payload, which matters because a full
+    crawl response carries html, cleaned_html, markdown, media, links, metadata,
+    screenshot and pdf together.
+request_tracing:
+  gate: not documented
+  v1: 'request_id in response headers, cited by the error reference for 500 reports'
+  self_hosted: 'correlation_id inside every generic 5xx body, matched against server logs'
+  finding: 'Three different tracing identifiers across three surfaces, and none on the gate API.'
+error_envelope:
+  shape: 'vendor JSON — {"error": "..."} (gate), {"detail": "..."} + error_message (v1), {"error","correlation_id"} (self-hosted)'
+  rfc9457: false
+  detail: errors/crawl4ai-problem-types.yml
+rate_limit_signaling:
+  headers: [X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-Storage-Used-MB, X-Storage-Remaining-MB]
+  reset_units: seconds
+  exhausted_status: 429
+  detail: rate-limits/crawl4ai-rate-limits.yml
+usage_accounting:
+  field: 'usage: {credits_used, credits_remaining}'
+  note: >-
+    Returned inline on v1 responses, so an agent can meter its own spend without a
+    separate billing call. Proxy mode multiplies cost 1x/5x/10x.
+dry_run_mode:
+  supported: false
+  note: >-
+    No preview or estimate endpoint. The closest published affordance is
+    POST /v1/map, which discovers a domain's URLs without crawling their content,
+    and can be used to size a crawl before committing to it — but it is a real
+    billable call, not a dry run.
+reversibility:
+  grade: documented
+  applicability: >-
+    Crawl4AI is overwhelmingly a READ API — scrape, search, answer, extract and
+    map create nothing on the provider's side and mutate nothing on the target,
+    so reversal is `na` for them. The only write surface is the async job system,
+    plus stored artifacts on the self-hosted server.
+  surfaces:
+    - write_operation: 'POST /v1/{markdown,screenshot,extract,crawl}/async — submit an async job'
+      reversal: 'DELETE /v1/{type}/jobs/{job_id}'
+      reversal_operation_id: null
+      effect: 'Returns {"job_id":"...","status":"cancelled"}'
+      window_stated: false
+      note: >-
+        The docs state the cancel endpoint exists and what it returns, but NEVER
+        state until when it works — whether a running job can be cancelled
+        mid-flight, whether already-crawled pages are still billed, or whether a
+        completed job can be cancelled at all. That missing sentence is the only
+        thing keeping this at `documented` rather than `verified`.
+      docs: skills/reference/crawl4ai-endpoints.md
+    - write_operation: 'POST /scrape/jobs (gate) — submit a bulk job of up to 10,000 URLs'
+      reversal: none
+      window_stated: false
+      note: >-
+        The gate job surface publishes submit, status, results and retry — and NO
+        cancel. Once a 10,000-URL job is accepted there is no documented way to
+        stop it, which is the single riskiest published operation for an agent to
+        call.
+    - write_operation: 'POST /scrape/jobs/{id}/retry — re-run only the failed URLs'
+      reversal: none
+      window_stated: false
+      note: 'Additive and itself irreversible; each retry is billable.'
+    - write_operation: 'Artifact storage (self-hosted /screenshot, /pdf -> artifact_id)'
+      reversal: 'expiry — artifacts are held under a TTL and quota'
+      window_stated: partial
+      note: >-
+        The 0.9.0 notes say a TTL and quota apply but do not publish the TTL value;
+        it is operator-configurable in config.yml.
+    - write_operation: 'Subscription (Supporter tier)'
+      reversal: cancel
+      window_stated: true
+      window: >-
+        "cancellation takes effect at the end of the current period, and access
+        continues until then"; "Except where required by law, payments are
+        non-refundable."
+      docs: 'https://gate.crawl4ai.com/legal/#terms'
+  recommendation: >-
+    Publishing one sentence per job endpoint — until when cancel works and what is
+    billed on a partial cancel — plus a cancel operation on the gate job surface,
+    would move this dimension from documented to verified.
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com

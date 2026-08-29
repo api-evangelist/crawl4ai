@@ -1,0 +1,111 @@
+generated: '2026-08-29'
+method: probed
+source: >-
+  POST https://gate.crawl4ai.com/mcp {"jsonrpc":"2.0","id":1,"method":"tools/list"}
+  -> HTTP 200 text/event-stream, 2026-08-29
+provider: Crawl4AI
+providerId: crawl4ai
+name: Crawl4AI Cloud MCP Server
+description: >-
+  Crawl4AI ships a hosted, streamable-HTTP MCP server at
+  https://gate.crawl4ai.com/mcp that exposes the Cloud API as five native agent
+  tools. tools/list answers ANONYMOUSLY — the full tool set with complete JSON
+  Schema inputSchemas came back on an unauthenticated POST — while tools/call
+  requires a key. The separately-distributed Claude Code plugin also ships a
+  local stdio server, so both deployment modes exist.
+deployment:
+  mode: both
+  endpoint: https://gate.crawl4ai.com/mcp
+  install: >-
+    claude mcp add --transport http crawl4ai https://gate.crawl4ai.com/mcp
+    --header "Authorization: Bearer sk_live_..."
+  package: https://github.com/unclecode/crawl4ai-cloud-sdk/tree/main/python/claude-plugin
+  auth: api-key
+  verified: probed
+transport:
+  remote:
+    protocol: streamable-http
+    endpoint: https://gate.crawl4ai.com/mcp
+    methods_observed:
+      - method: GET
+        status: 405
+        note: Method Not Allowed — POST only
+      - method: POST tools/list
+        status: 200
+        content_type: text/event-stream
+        note: Returned all five tools with inputSchema, unauthenticated
+    auth:
+      style: bearer
+      header: 'Authorization: Bearer sk_live_...'
+      alternate_header: 'x-api-key: sk_live_...'
+      required_for: tools/call
+      anonymous_for: tools/list
+  local_stdio:
+    source: >-
+      https://github.com/unclecode/crawl4ai-cloud-sdk/blob/main/python/claude-plugin/.mcp.json
+    command: bash
+    args:
+      - '${CLAUDE_PLUGIN_ROOT}/start.sh'
+    note: >-
+      Shipped inside the first-party Claude Code plugin (crawl4ai-claude-plugins
+      marketplace). Runs in cloud or local mode; /crawl4ai:switch flips between
+      them. This is a human-install surface, not an agent-reachable URL.
+clients_documented:
+  - Claude Code
+  - Cursor
+  - Windsurf
+tools:
+  - name: scrape
+    description: Scrape a web page and return clean markdown or HTML.
+    required: [url]
+    parameters: [url, format, proxy, country, parse, bypass_cache]
+    rest_equivalent: POST /scrape
+  - name: search
+    description: >-
+      Search the web (browser-free, multi-engine) and return ranked results.
+      rich=true adds follow-up questions, related queries and an entity card.
+    required: [q]
+    parameters: [q, rich]
+    rest_equivalent: GET /search
+  - name: answer
+    description: >-
+      EXPERIMENTAL: get a direct answer to a question with its sources; `answered`
+      is false when no direct answer exists.
+    required: [q]
+    parameters: [q]
+    rest_equivalent: GET /answer
+  - name: extract
+    description: >-
+      Extract structured data from a page using an LLM. Give a URL plus either an
+      instruction or a JSON schema.
+    required: [url]
+    parameters: [url, instruction, schema, example, bypass_cache]
+    rest_equivalent: POST /extract
+  - name: batch
+    description: Scrape many URLs in one call; returns one result per URL (NDJSON).
+    required: [urls]
+    parameters: [urls, format, proxy, country, parse]
+    rest_equivalent: POST /scrape/batch
+tool_count: 5
+schemas:
+  file: crawl4ai-mcp-tools.json
+  note: >-
+    Verbatim tools/list JSON-RPC response, including every tool's JSON Schema
+    2020-12 inputSchema. Not derived — this is the server's own answer.
+divergence:
+  note: >-
+    The MCP tool set covers only the gate.crawl4ai.com Cloud API. It does NOT
+    expose the async job surface (POST /scrape/jobs and friends) and does not
+    reach the api.crawl4ai.com v1 API (markdown / screenshot / map / crawl-site)
+    at all. See crawl4ai-tool-crosswalk.yml.
+self_hosted_mcp:
+  note: >-
+    The open-source self-hosted Docker server carries its own MCP bridge
+    (deploy/docker/mcp_bridge.py) exposing /mcp/sse, /mcp/ws and /mcp/schema on
+    the operator's own host and port 11235. It is a templated, customer-run
+    endpoint, not a Crawl4AI-operated one, so it is documented but not recorded
+    as a reachable agent surface.
+  docs: https://docs.crawl4ai.com/core/self-hosting/
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com

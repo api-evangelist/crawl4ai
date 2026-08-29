@@ -1,0 +1,85 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enrichment overlay for the Crawl4AI Platform Gateway spec
+  version: 1.0.0
+extends: ../openapi/crawl4ai-platform-gateway-openapi.json
+x-provenance:
+  generated: '2026-08-29'
+  method: generated
+  source: >-
+    Enhancements derived from live probes of gate.crawl4ai.com and from
+    https://github.com/unclecode/crawl4ai-platform-production (config/routes.oas.json)
+  note: >-
+    THIS OVERLAY EXISTS MAINLY TO CARRY A WARNING. The document it extends is the
+    only OpenAPI Crawl4AI has ever published, and it does not describe any live
+    Crawl4AI API. It is the route config of a Zuplo gateway in the first-party
+    repo unclecode/crawl4ai-platform-production, last pushed 2025-11-02. Both of
+    its operations return 404 on the live host (POST https://gate.crawl4ai.com/crawl/job
+    -> 404, probed 2026-08-29), and neither appears in the current documentation.
+    The original file is never mutated; everything below is additive.
+actions:
+  - target: $.info
+    description: Record provenance, ownership and retirement status on the document itself.
+    update:
+      x-provider: Crawl4AI
+      x-provider-id: crawl4ai
+      x-legal-entity: CONTEXT4AI PTE LTD
+      x-source-repository: https://github.com/unclecode/crawl4ai-platform-production
+      x-source-file: config/routes.oas.json
+      x-ownership-check: >-
+        info.title is "Crawl4AI API" and the description is "AI-powered web
+        scraping and crawling API"; the repository owner @unclecode is the author
+        of the crawl4ai project and the named contact on the first-party Cloud
+        SDK. Ownership is not in doubt. Currency is.
+      x-status: retired
+      x-status-evidence: 'POST https://gate.crawl4ai.com/crawl/job -> 404 (2026-08-29)'
+      x-live-surfaces:
+        - https://gate.crawl4ai.com
+        - https://api.crawl4ai.com
+      x-live-contract: >-
+        None published. The live surfaces are documented in prose at
+        gate.crawl4ai.com/docs and in the provider's own skill reference; the only
+        machine-readable live contract is the MCP tools/list at
+        https://gate.crawl4ai.com/mcp.
+  - target: $
+    description: >-
+      Add the servers block the source document omits entirely, marked as
+      historical rather than callable.
+    update:
+      x-servers-note: >-
+        The source spec declares NO servers[]. It was a Zuplo route config, where
+        the host is supplied by the gateway deployment, so no host can be
+        recovered from the document. None is invented here.
+  - target: $.paths['/crawl/job'].post
+    description: Mark the operation retired and point at its live replacement.
+    update:
+      x-status: retired
+      x-probe: {url: 'https://gate.crawl4ai.com/crawl/job', method: POST, status: 404, date: '2026-08-29'}
+      x-replaced-by: 'POST https://gate.crawl4ai.com/scrape/jobs'
+      x-replacement-note: >-
+        The live equivalent takes {"urls":[...]} plus any /scrape field and returns
+        {"job_id":"j_...","status":"pending"}; it accepts up to 10,000 URLs.
+      x-gateway-policies:
+        inbound: [api-key-auth, quota-enforcement, rate-limit]
+        outbound: [add-rate-limit-headers, quota-headers, billing-track]
+  - target: $.paths['/crawl/job/{jobId}'].get
+    description: Mark the operation retired and point at its live replacement.
+    update:
+      x-status: retired
+      x-replaced-by: 'GET https://gate.crawl4ai.com/scrape/jobs/{id}'
+      x-replacement-note: >-
+        The live equivalent returns status and counts; ?full=1 adds per-URL detail,
+        and results are fetched separately from /scrape/jobs/{id}/results as NDJSON.
+  - target: $.paths['/crawl/job'].post.responses['429']
+    description: Attach the rate-limit signalling the provider documents elsewhere.
+    update:
+      headers:
+        X-RateLimit-Limit: {description: Requests allowed per minute., schema: {type: integer}}
+        X-RateLimit-Remaining: {description: Requests left this window., schema: {type: integer}}
+        X-RateLimit-Reset: {description: SECONDS until the limit resets — not a unix timestamp., schema: {type: integer}}
+  - target: $.paths['/crawl/job'].post.responses['401']
+    description: Record the observed live authentication behaviour.
+    update:
+      x-observed: >-
+        On the live gate host an unauthenticated request returns 401 with a
+        zero-length body and no error document.

@@ -1,0 +1,177 @@
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+        "tools": [
+            {
+                "name": "answer",
+                "description": "EXPERIMENTAL: get a direct answer to a question (with its sources). Some questions won't have a direct answer yet \u2014 then `answered` is false; use the `search` tool for links.",
+                "inputSchema": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "properties": {
+                        "q": {
+                            "description": "The question to answer.",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "q"
+                    ],
+                    "title": "AnswerArgs",
+                    "type": "object"
+                }
+            },
+            {
+                "name": "search",
+                "description": "Search the web (browser-free, multi-engine) and return ranked results. Set rich=true to also get follow-up questions, related queries, an entity card and more. (For a direct answer, use the answer tool.)",
+                "inputSchema": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "properties": {
+                        "q": {
+                            "description": "The search query.",
+                            "type": "string"
+                        },
+                        "rich": {
+                            "default": null,
+                            "description": "Rich mode: also return follow-up questions, related queries, an entity card, videos, news\nand more \u2014 not just the ranked links. Slightly slower. (For a direct answer, use the\n`answer` tool.)",
+                            "nullable": true,
+                            "type": "boolean"
+                        }
+                    },
+                    "required": [
+                        "q"
+                    ],
+                    "title": "SearchArgs",
+                    "type": "object"
+                }
+            },
+            {
+                "name": "scrape",
+                "description": "Scrape a web page and return clean markdown or HTML.",
+                "inputSchema": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "properties": {
+                        "bypass_cache": {
+                            "default": null,
+                            "description": "Skip the stored copy and fetch the page fresh. Costs a real fetch; use it when the page\nchanges often, or to measure what a fetch really costs.",
+                            "nullable": true,
+                            "type": "boolean"
+                        },
+                        "country": {
+                            "default": null,
+                            "description": "Two-letter exit country for isp/residential, e.g. \"us\", \"sg\".",
+                            "nullable": true,
+                            "type": "string"
+                        },
+                        "format": {
+                            "default": null,
+                            "description": "Output format: \"both\" (default), \"md\", or \"html\".",
+                            "nullable": true,
+                            "type": "string"
+                        },
+                        "parse": {
+                            "default": null,
+                            "description": "Also return page structure. true = everything, or an object like {\"links\":true,\"tables\":true}."
+                        },
+                        "proxy": {
+                            "default": null,
+                            "description": "Exit network: \"none\" (default), \"isp\", or \"residential\" (for sites that block datacenters).",
+                            "nullable": true,
+                            "type": "string"
+                        },
+                        "url": {
+                            "description": "The URL to scrape.",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "url"
+                    ],
+                    "title": "ScrapeArgs",
+                    "type": "object"
+                }
+            },
+            {
+                "name": "batch",
+                "description": "Scrape many URLs in one call; returns one result per URL (NDJSON).",
+                "inputSchema": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "properties": {
+                        "country": {
+                            "default": null,
+                            "description": "Two-letter exit country for isp/residential.",
+                            "nullable": true,
+                            "type": "string"
+                        },
+                        "format": {
+                            "default": null,
+                            "description": "Output format: \"both\" (default), \"md\", or \"html\".",
+                            "nullable": true,
+                            "type": "string"
+                        },
+                        "parse": {
+                            "default": null,
+                            "description": "Also return page structure for every URL. true = everything, or an object of sections."
+                        },
+                        "proxy": {
+                            "default": null,
+                            "description": "Exit network: \"none\" (default), \"isp\", or \"residential\".",
+                            "nullable": true,
+                            "type": "string"
+                        },
+                        "urls": {
+                            "description": "URLs to scrape (up to ~50).",
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "urls"
+                    ],
+                    "title": "BatchArgs",
+                    "type": "object"
+                }
+            },
+            {
+                "name": "extract",
+                "description": "Extract structured data from a page using an LLM. Give a URL plus either an instruction or a JSON schema.",
+                "inputSchema": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "properties": {
+                        "bypass_cache": {
+                            "default": null,
+                            "description": "Skip the stored copy and fetch the page fresh before extracting.",
+                            "nullable": true,
+                            "type": "boolean"
+                        },
+                        "example": {
+                            "default": null,
+                            "description": "A sample of the shape you want (structure, not values)."
+                        },
+                        "instruction": {
+                            "default": null,
+                            "description": "Natural-language instruction, e.g. \"return the title and price\".",
+                            "nullable": true,
+                            "type": "string"
+                        },
+                        "schema": {
+                            "default": null,
+                            "description": "JSON schema of the fields to extract (typed output; alternative or complement to `instruction`)."
+                        },
+                        "url": {
+                            "description": "The URL of the page to read.",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "url"
+                    ],
+                    "title": "ExtractArgs",
+                    "type": "object"
+                }
+            }
+        ]
+    }
+}

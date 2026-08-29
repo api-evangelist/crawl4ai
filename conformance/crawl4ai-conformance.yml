@@ -1,0 +1,185 @@
+generated: '2026-08-29'
+method: searched
+source: >-
+  Live probes of gate.crawl4ai.com (MCP tools/list, llms.txt, /.well-known/*),
+  https://gate.crawl4ai.com/legal/, https://github.com/unclecode/crawl4ai
+  (CHANGELOG.md, SECURITY.md, crawl4ai/async_configs.py, docs/md_v2/api/parameters.md)
+provider: Crawl4AI
+providerId: crawl4ai
+description: >-
+  Cross-cutting and domain-standard conformance for Crawl4AI. Assertions marked
+  conforms:true are backed by something fetched; assertions marked false are
+  recorded absences, not penalties.
+conformance:
+  - id: mcp
+    name: Model Context Protocol
+    conforms: true
+    version: streamable-http
+    evidence: >-
+      POST https://gate.crawl4ai.com/mcp with a JSON-RPC 2.0 tools/list body
+      returned HTTP 200 text/event-stream carrying five tools with complete
+      inputSchemas, unauthenticated, 2026-08-29. Verbatim response saved at
+      mcp/crawl4ai-mcp-tools.json.
+  - id: json-rpc-2.0
+    name: JSON-RPC 2.0
+    conforms: true
+    evidence: 'MCP transport; response carried {"jsonrpc":"2.0","id":1,"result":{...}}.'
+  - id: json-schema-2020-12
+    name: JSON Schema 2020-12
+    conforms: true
+    evidence: >-
+      Every MCP tool inputSchema declares
+      "$schema":"https://json-schema.org/draft/2020-12/schema".
+  - id: llms-txt
+    name: llms.txt
+    conforms: true
+    evidence: >-
+      https://gate.crawl4ai.com/llms.txt returns HTTP 200 text/plain, 7,822 bytes,
+      with the documented sections and working curl examples. Saved verbatim to
+      llms/crawl4ai-llms.txt. NOTE the docs host does NOT serve one —
+      https://docs.crawl4ai.com/llms.txt is 404.
+  - id: openapi
+    name: OpenAPI
+    conforms: partial
+    version: 3.1.0
+    evidence: >-
+      The only OpenAPI Crawl4AI has ever published is
+      config/routes.oas.json in unclecode/crawl4ai-platform-production — two
+      operations for a Zuplo gateway that no longer answers. Neither live REST
+      surface (gate.crawl4ai.com, api.crawl4ai.com) publishes a spec; both return
+      404 on /openapi.json, /openapi.yaml, /swagger.json, /v1/openapi.json,
+      /api-docs and /redoc (probed 2026-08-29).
+  - id: ndjson
+    name: 'Newline-delimited JSON (application/x-ndjson)'
+    conforms: true
+    evidence: >-
+      "Response is application/x-ndjson — one JSON line per URL as it completes"
+      (POST /scrape/batch); job results stream the same way.
+  - id: semver
+    name: Semantic Versioning
+    conforms: true
+    evidence: '"this project adheres to Semantic Versioning" — CHANGELOG.md preamble.'
+  - id: keep-a-changelog
+    name: Keep a Changelog 1.0.0
+    conforms: true
+    evidence: '"The format is based on Keep a Changelog" — CHANGELOG.md preamble.'
+  - id: rfc9457
+    name: 'RFC 9457 Problem Details for HTTP APIs'
+    conforms: false
+    evidence: >-
+      Three different vendor envelopes in use ({"error"}, {"detail"} +
+      error_message, {"error","correlation_id"}); no application/problem+json
+      anywhere. See errors/crawl4ai-problem-types.yml.
+  - id: rfc9116
+    name: 'RFC 9116 security.txt'
+    conforms: false
+    evidence: >-
+      404 on crawl4ai.com, gate.crawl4ai.com and docs.crawl4ai.com; the 200 on
+      api.crawl4ai.com is the SPA HTML shell, not a document. A real disclosure
+      program exists in SECURITY.md — only the well-known pointer is missing.
+  - id: rfc8594
+    name: 'RFC 8594 Sunset / Deprecation headers'
+    conforms: false
+    evidence: >-
+      No Sunset or Deprecation header on any surface; removals are announced only
+      in release notes and MIGRATION.md.
+  - id: oauth2
+    name: OAuth 2.0 for API authorization
+    conforms: false
+    evidence: >-
+      API auth is a bare bearer/X-API-Key string with no scopes.
+      /.well-known/oauth-authorization-server and /.well-known/oauth-protected-resource
+      both 404 on gate.crawl4ai.com. GitHub/Google OAuth exists only for human
+      dashboard sign-in.
+  - id: oidc
+    name: OpenID Connect
+    conforms: false
+    evidence: '/.well-known/openid-configuration 404 on every host.'
+  - id: a2a
+    name: 'A2A Agent Card'
+    conforms: false
+    evidence: >-
+      /.well-known/agent-card.json and /.well-known/agent.json return 404 on
+      crawl4ai.com, gate.crawl4ai.com and docs.crawl4ai.com; api.crawl4ai.com
+      answers 200 with its SPA shell for every path, which is not a card.
+  - id: asyncapi
+    name: AsyncAPI
+    conforms: false
+    evidence: >-
+      A real webhook surface exists (webhook_url on every async job, exponential
+      backoff retry, documented payloads) but no AsyncAPI document is published.
+      See asyncapi/crawl4ai-webhooks.yml.
+  - id: apache-2.0
+    name: Apache License 2.0
+    conforms: true
+    evidence: >-
+      Declared on PyPI, in the cloud SDK pyproject.toml and package.json, in the
+      Claude plugin manifest, and on the Cloud API landing page.
+domain_standards:
+  - id: rfc9309
+    name: 'RFC 9309 Robots Exclusion Protocol'
+    market: web crawling / data collection
+    conforms: partial
+    grade: opt-in
+    evidence: >-
+      The library implements robots.txt compliance as CrawlerRunConfig
+      check_robots_txt (crawl4ai/async_configs.py:1688) with SQLite-backed caching
+      and a user_agent used for the check — but the DEFAULT IS FALSE
+      ("check_robots_txt (bool): Whether to check robots.txt rules before
+      crawling. Default: False", async_configs.py:1562, and the same default in
+      docs/md_v2/api/parameters.md). Robots compliance is therefore available and
+      documented, but off unless the caller turns it on.
+    note: >-
+      No robots.txt handling parameter is exposed on either hosted Cloud API. The
+      obligation is moved to the customer by contract instead: Terms of Service §4
+      warrants that the caller "has the legal right to access, collect, and use
+      the data" and that use complies with "the target site's terms, and any
+      access directives it publishes (including robots directives)". The landing
+      page states the opposite posture editorially — "the whole 'block the bots'
+      arms race? a phase. let crawlers crawl."
+  - id: crawler-provenance
+    name: Result provenance disclosure
+    market: web crawling / data collection
+    conforms: true
+    evidence: >-
+      "Provenance: every response tells you which engine served it and whether it
+      came from cache" (llms.txt), restated on the landing page as "every result
+      carries where it came from - the origin travels with the data."
+    note: >-
+      A self-declared house convention, not an external standard. Recorded because
+      it is a machine-readable field on every response, not a marketing claim.
+  - id: aipref
+    name: 'AI preferences / content signals (AIPREF, Content-Signal)'
+    conforms: false
+    evidence: >-
+      No AIPREF or Content-Signal handling is documented, no crawler user-agent is
+      registered or published for identification, and gate.crawl4ai.com serves no
+      robots.txt of its own (404, probed 2026-08-29).
+compliance_certifications:
+  published: false
+  soc2: false
+  iso27001: false
+  gdpr:
+    claimed: true
+    evidence: >-
+      The Privacy Policy names CONTEXT4AI PTE LTD as data controller, states
+      lawful bases (contract, legitimate interests, legal obligation, consent),
+      lists sub-processors (Stripe, Hetzner, network/egress providers, Google
+      Workspace), states "We do not sell your personal data", and describes
+      multi-region processing (EU, Singapore, US) with "appropriate safeguards"
+      for cross-border transfer. This is a GDPR-shaped policy, not a certification.
+    url: 'https://gate.crawl4ai.com/legal/#privacy'
+  note: >-
+    No trust center, no SOC 2, ISO 27001, PCI, HIPAA or FedRAMP claim was found on
+    any Crawl4AI surface (probe-security-programs.py returned trust=none,
+    2026-08-29). No Compliance pointer is emitted in apis.yml as a result.
+corporate:
+  legal_entity: CONTEXT4AI PTE LTD
+  jurisdiction: Singapore
+  governing_law: Singapore
+  terms_effective: '2026-08-06'
+  contact: hello@crawl4ai.com
+  source: 'https://gate.crawl4ai.com/legal/'
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com

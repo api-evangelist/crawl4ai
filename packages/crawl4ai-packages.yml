@@ -1,0 +1,102 @@
+generated: '2026-08-29'
+method: searched
+source: >-
+  registry.npmjs.org, pypi.org, proxy.golang.org, hub.docker.com, and
+  github.com/unclecode/crawl4ai-cloud-sdk
+provider: Crawl4AI
+providerId: crawl4ai
+description: >-
+  First-party client libraries and distributions published by Crawl4AI
+  (CONTEXT4AI PTE LTD / @unclecode). The core open-source crawler ships on PyPI
+  and Docker Hub; the Cloud SDK ships as a single repository with Python, Node.js
+  and Go packages, only two of which are published to a public registry.
+packages:
+  - name: crawl4ai
+    registry: pypi
+    official: true
+    language: python
+    url: https://pypi.org/project/crawl4ai/
+    repository: https://github.com/unclecode/crawl4ai
+    license: Apache-2.0
+    version: 0.9.2
+    published: '2026-07-15'
+    requires_python: '>=3.10'
+    note: >-
+      The core open-source crawler library and the `crwl` CLI. Also the source of
+      the self-hosted Docker API server under deploy/docker/.
+  - name: unclecode/crawl4ai
+    registry: dockerhub
+    official: true
+    language: docker
+    url: https://hub.docker.com/r/unclecode/crawl4ai
+    repository: https://github.com/unclecode/crawl4ai
+    license: Apache-2.0
+    version: 0.9.2
+    published: '2026-07-15'
+    note: >-
+      Multi-arch (linux/amd64, linux/arm64) image of the self-hosted API server,
+      served on port 11235. 3,302,060 pulls recorded 2026-08-29. Tags latest, 0,
+      0.9 and 0.9.2 all last pushed 2026-07-15.
+  - name: crawl4ai-cloud
+    registry: npm
+    official: true
+    language: javascript
+    url: https://www.npmjs.com/package/crawl4ai-cloud
+    repository: https://github.com/unclecode/crawl4ai-cloud-sdk
+    license: Apache-2.0
+    version: 1.4.0
+    published: '2026-06-28'
+    note: >-
+      "Lightweight cloud SDK for Crawl4AI - mirrors the OSS API." Published by
+      Unclecode (unclecode@kidocode.com), the author of the crawl4ai project, from
+      the nodejs/ directory of the crawl4ai-cloud-sdk monorepo. homepage field
+      points at https://api.crawl4ai.com.
+  - name: github.com/unclecode/crawl4ai-cloud-sdk/go
+    registry: go
+    official: true
+    language: go
+    url: https://pkg.go.dev/github.com/unclecode/crawl4ai-cloud-sdk/go
+    repository: https://github.com/unclecode/crawl4ai-cloud-sdk
+    license: Apache-2.0
+    version: v1.4.0
+    published: '2026-06-28'
+    note: >-
+      Read from proxy.golang.org/github.com/unclecode/crawl4ai-cloud-sdk/go/@latest
+      (tag go/v1.4.0, commit 6c19b74).
+  - name: crawl4ai-cloud-sdk
+    registry: source
+    official: true
+    language: python
+    url: https://github.com/unclecode/crawl4ai-cloud-sdk/tree/main/python
+    repository: https://github.com/unclecode/crawl4ai-cloud-sdk
+    license: Apache-2.0
+    version: 1.2.0
+    published: null
+    note: >-
+      SOURCE-ONLY. Version read from python/pyproject.toml; there is no PyPI
+      release — pypi.org/pypi/crawl4ai-cloud/json, crawl4ai_cloud and c4ai-cloud
+      all return 404 (probed 2026-08-29), so `published` is honestly null. The
+      Python Cloud SDK is also two minor versions behind its own Node.js (1.4.0)
+      and Go (v1.4.0) siblings in the same repository.
+  - name: crawl4ai (Claude Code plugin)
+    registry: source
+    official: true
+    language: markdown
+    url: >-
+      https://github.com/unclecode/crawl4ai-cloud-sdk/tree/main/python/claude-plugin
+    repository: https://github.com/unclecode/crawl4ai-cloud-sdk
+    license: Apache-2.0
+    version: 1.0.0
+    published: null
+    note: >-
+      Distributed through the repo's own .claude-plugin/marketplace.json rather
+      than a package registry, so there is no registry date to read. Ships four
+      Agent Skills and a local stdio MCP server — captured in skills/ and mcp/.
+third_party_note: >-
+  npm carries a large third-party Crawl4AI ecosystem (crawl4ai 1.1.0 by pyronaur,
+  mcp-crawl4ai-ts, @gkzhb/crawl4ai-mcp, n8n-nodes-crawl4ai*, pi-crawl4ai). None of
+  these are published by unclecode or CONTEXT4AI PTE LTD and none are recorded
+  here as official.
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com

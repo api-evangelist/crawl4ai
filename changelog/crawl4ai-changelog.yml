@@ -1,0 +1,92 @@
+generated: '2026-08-29'
+method: searched
+source: >-
+  https://github.com/unclecode/crawl4ai/blob/main/CHANGELOG.md and
+  https://api.github.com/repos/unclecode/crawl4ai/releases
+provider: Crawl4AI
+providerId: crawl4ai
+description: >-
+  Crawl4AI keeps a dated, Keep-a-Changelog changelog for the open-source library
+  and the self-hosted Docker server, mirrored to GitHub Releases and rendered at
+  docs.crawl4ai.com/blog/. Neither hosted API (gate.crawl4ai.com,
+  api.crawl4ai.com) has a changelog of its own.
+scheme: semver
+format: keep-a-changelog
+declared: >-
+  "The format is based on Keep a Changelog, and this project adheres to Semantic
+  Versioning."
+url: https://github.com/unclecode/crawl4ai/blob/main/CHANGELOG.md
+rendered: https://docs.crawl4ai.com/blog/
+releases_feed: https://github.com/unclecode/crawl4ai/releases
+current_version: 0.9.2
+current_version_date: '2026-07-15'
+covers:
+  - crawl4ai Python library
+  - Crawl4AI Self-Hosted Docker API server
+does_not_cover:
+  - Crawl4AI Cloud API (gate.crawl4ai.com)
+  - Crawl4AI Cloud v1 API (api.crawl4ai.com)
+entries:
+  - version: 0.9.2
+    date: '2026-07-15'
+    breaking: false
+    highlights:
+      - Patch release; Docker Hub tags latest/0/0.9/0.9.2 all republished the same day.
+  - version: 0.9.1
+    date: '2026-07-08'
+    breaking: false
+  - version: 0.9.0
+    date: '2026-06-18'
+    breaking: true
+    scope: Self-hosted Docker API server only; the pip library is unchanged.
+    highlights:
+      - >-
+        Secure-by-default release. Authentication on by default, loopback bind
+        without a token, request body treated as an untrusted trust boundary.
+      - >-
+        Declarative hooks replace request-supplied Python code; strengthened JWT;
+        admin-scoped monitor actions; deny-by-default CORS; strict security
+        headers; TLS verification on; password-protected loopback-only Redis;
+        bounded job queue.
+      - >-
+        Download path confinement (CWE-22, credit Y4tacker); SSRF destination
+        validation on the streaming crawl path (CWE-918, credit KOH Jun Sheng);
+        request-supplied browser_config.extra_args rejected (CWE-94).
+      - >-
+        Generic 5xx responses carrying a correlation_id; artifact ids replace
+        output_path for /screenshot and /pdf.
+    migration: https://github.com/unclecode/crawl4ai/blob/main/deploy/docker/MIGRATION.md
+  - version: 0.8.9
+    date: '2026-06-04'
+    breaking: false
+    highlights:
+      - >-
+        SSRF via proxy settings closed (CWE-918, credit geo-chen). Proxy
+        destinations validated with the same global-routability check; proxy/DNS
+        redirecting flags stripped from extra_args.
+  - version: 0.8.8
+    date: '2026-06-04'
+    breaking: false
+    highlights:
+      - SSRF filter gaps closed including IPv6 transition forms (CWE-918).
+      - Arbitrary file write via output_path hardened (CWE-59/22).
+      - >-
+        LLM credential exfiltration closed (CWE-522/200) — request-supplied
+        base_url ignored on /md, /llm, /llm/job.
+      - CRLF-safe logging (CWE-117) and webhook request-header validation (CWE-93).
+  - version: 0.8.7
+    date: '2026-06-01'
+    breaking: false
+  - version: 0.8.5
+    date: '2026-03-18'
+    breaking: false
+  - version: 0.8.0
+    date: '2026-01-16'
+    breaking: false
+observation: >-
+  Six of the eight most recent releases are security releases with named external
+  reporters and accompanying GitHub Security Advisories — an unusually explicit
+  vulnerability-handling record for a project of this size.
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com

@@ -1,0 +1,170 @@
+# Crawl4AI Cloud API
+
+> Crawl4AI turns any web page into clean, LLM-ready data. One fast API — scrape a page to
+> Markdown, extract typed JSON, search the web, or run large batches — served from three
+> regions (EU, Singapore, US) at `https://gate.crawl4ai.com`, routed to the nearest one.
+> Built on the open-source crawl4ai (https://github.com/unclecode/crawl4ai).
+
+Full docs: https://gate.crawl4ai.com/docs
+
+## Getting started
+
+- Base URL: `https://gate.crawl4ai.com`
+- Get a free key: visit https://gate.crawl4ai.com/ and click "Get a key" (a 24-hour key is
+  issued instantly; verify your email to keep it). Manage keys at https://gate.crawl4ai.com/dashboard/
+- Authenticate every request: `Authorization: Bearer sk_live_...` (the header `x-api-key: sk_live_...` also works).
+- Requests and responses are JSON unless noted. Errors return `{"error":"..."}` with an HTTP status.
+  Per-plan rate limits return `429` with `X-RateLimit-*` headers.
+
+## POST /scrape — page to Markdown/HTML
+
+Fetch one URL and return clean content. The service auto-picks the cheapest engine that works
+(cache → HTTP → browser) per domain — you don't choose an engine.
+
+Body:
+- `url` (string, required) — a public http/https URL.
+- `format` (string) — `both` (default) | `md` | `html`.
+- `proxy` (string) — `none` (default) | `isp` | `residential`. Exit network, for sites that block datacenters.
+- `country` (string) — two-letter exit country for isp/residential, e.g. `us`, `sg`.
+- `parse` (bool | object) — also return page structure. `true` = all, or pick:
+  `{"links":true,"media":true,"metadata":true,"tables":true}`.
+
+```
+curl https://gate.crawl4ai.com/scrape \
+  -H "Authorization: Bearer sk_live_..." -H "Content-Type: application/json" \
+  -d '{"url":"https://example.com","format":"both","proxy":"residential","country":"us",
+       "parse":{"links":true,"media":true,"metadata":true,"tables":true}}'
+```
+Returns: `{"ok":true,"markdown":"...","html":"...","content_hash":"...","ms":312}`
+
+## GET /search — web search
+
+Browser-free, multi-engine, results ranked and cleaned.
+
+Query params:
+- `q` (string, required) — the query (max 512 chars).
+- `rich` (0 | 1, default 0) — set `1` to also return a `rich` block: follow-up questions,
+  related queries, an entity card, videos, news and more. Slightly slower; best for
+  question-style queries. (For a direct answer, use `/answer`.)
+
+```
+curl "https://gate.crawl4ai.com/search?q=rust+web+crawler" \
+  -H "Authorization: Bearer sk_live_..."
+```
+Returns: a ranked list of results (title, url, snippet).
+
+With `rich=1` the response also carries a `rich` object (every field optional, present only when
+that block is on the page):
+- `follow_up_questions[]`, `related_queries[]` — strings.
+- `entity` — `{ title, subtitle?, description?, facts[] }` for a named thing (company, person…).
+- `videos[]`, `news[]`, `discussions[]` — `{ title, url }`.
+- `did_you_mean` — the corrected spelling, when the query was auto-corrected.
+(For a direct answer to a question, use `/answer` below.)
+
+```
+curl "https://gate.crawl4ai.com/search?q=why+is+the+sky+blue&rich=1" \
+  -H "Authorization: Bearer sk_live_..."
+```
+
+## GET /answer — direct answer (experimental)
+
+Ask a question, get a direct answer. Some questions won't have one yet — then `answered` is false
+(use /search for links). Experimental: the shape may change as we improve it (own-model + cache are
+coming).
+
+Query params:
+- `q` (string, required) — the question (max 512 chars).
+- `deep` (0 | 1, default 1) — `1` runs the full pipeline: a direct answer when the web's top
+  results support one (reading a couple of them if needed). `0` returns an answer only when one
+  is directly available, else `answered:false`.
+
+Response:
+- `answered` (bool) — did we return a direct answer?
+- `answer` — `{ kind: "generated", text, sources[] }` (present when `answered`) — a direct
+  answer generated from the web's current top results, with the sources it drew on.
+- `experimental` (bool) — always true for now.
+
+```
+curl "https://gate.crawl4ai.com/answer?q=why+is+the+sky+blue" \
+  -H "Authorization: Bearer sk_live_..."
+```
+
+## POST /extract — structured data from a page (LLM)
+
+Read a page (crawled for you) or your own content, and return typed data described by an
+instruction and/or a JSON schema.
+
+Body (give a URL OR inline `content`, plus an `instruction` and/or `schema`):
+- `url` (string) — the page to read; OR `content` (string) — your own text/markdown/html.
+- `instruction` (string) — plain-English description of what to pull out.
+- `schema` (object) — JSON schema each returned record must match (typed, predictable output).
+- `example` (object) — a sample of the shape you want (structure, not values).
+
+```
+curl https://gate.crawl4ai.com/extract \
+  -H "Authorization: Bearer sk_live_..." -H "Content-Type: application/json" \
+  -d '{
+        "url":"https://news.ycombinator.com",
+        "instruction":"the top stories on the front page",
+        "schema":{"type":"array","items":{"type":"object","properties":{
+          "title":{"type":"string"},"points":{"type":"integer"},"url":{"type":"string"}},
+          "required":["title","points"]}}
+      }'
+```
+Returns: `{"ok":true,"url":"...","data":[ ... ],"usage":{"total_tokens":N},"ms":1200}`
+
+## POST /scrape/batch — many URLs, streamed
+
+Scrape up to 50 URLs in one call. Results stream back as NDJSON — one JSON line per URL as it
+finishes. Bills one unit per URL. Takes `urls` plus any /scrape field (applied to every URL).
+
+```
+# -N streams each line as it lands
+curl -N https://gate.crawl4ai.com/scrape/batch \
+  -H "Authorization: Bearer sk_live_..." -H "Content-Type: application/json" \
+  -d '{"urls":["https://a.com","https://b.com"],"format":"md"}'
+```
+Returns (NDJSON): `{"url":"...","ok":true,"result":{...}}` per line.
+
+## POST /scrape/jobs — large async jobs
+
+For big lists (up to 10,000 URLs). Submit once, get a job id, then poll while it drains in the
+background. Takes `urls` plus any /scrape field.
+
+- `POST /scrape/jobs` with `{"urls":[ ... ]}` → `{"job_id":"j_...","status":"pending"}`
+- `GET /scrape/jobs/{id}` → status + counts (add `?full=1` for per-URL detail)
+- `GET /scrape/jobs/{id}/results` → NDJSON results, paged with `?after=N` (500 per page)
+- `POST /scrape/jobs/{id}/retry` → re-run only the failed URLs
+
+```
+JOB=$(curl -s https://gate.crawl4ai.com/scrape/jobs \
+  -H "Authorization: Bearer sk_live_..." -H "Content-Type: application/json" \
+  -d '{"urls":["https://a.com","https://b.com"]}' | jq -r .job_id)
+until [ "$(curl -s https://gate.crawl4ai.com/scrape/jobs/$JOB \
+       -H "Authorization: Bearer sk_live_..." | jq -r .status)" = "done" ]; do sleep 2; done
+curl -s https://gate.crawl4ai.com/scrape/jobs/$JOB/results -H "Authorization: Bearer sk_live_..."
+```
+
+## MCP — use Crawl4AI as native tools
+
+Add Crawl4AI to Claude Code, Cursor, or any MCP client — no install, just a URL and your key.
+
+```
+claude mcp add --transport http crawl4ai https://gate.crawl4ai.com/mcp \
+  --header "Authorization: Bearer sk_live_..."
+```
+Tools: `scrape` (url, format, proxy, country, parse) · `search` (q, rich) · `answer` (q,
+experimental) · `extract` (url, instruction, schema, example) · `batch` (urls, format, proxy, country).
+
+## Notes
+
+- Provenance: every response tells you which engine served it and whether it came from cache.
+- Regions: requests route to the nearest region automatically (EU, Singapore, or US).
+- Caching: repeated URLs are served from a shared archive.
+- Fair use: each plan has request/concurrency limits (see the dashboard); over-limit calls get `429`.
+
+## More
+
+- Full API docs: https://gate.crawl4ai.com/docs
+- Dashboard & keys: https://gate.crawl4ai.com/dashboard/
+- Open-source library: https://github.com/unclecode/crawl4ai

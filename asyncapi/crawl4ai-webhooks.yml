@@ -1,0 +1,98 @@
+generated: '2026-08-29'
+method: searched
+source: >-
+  https://github.com/unclecode/crawl4ai/blob/main/deploy/docker/WEBHOOK_EXAMPLES.md,
+  skills/reference/crawl4ai-endpoints.md,
+  https://github.com/unclecode/crawl4ai-cloud-sdk (examples/crawl/04_async_webhook_http)
+provider: Crawl4AI
+providerId: crawl4ai
+description: >-
+  Crawl4AI publishes a real webhook surface for async crawl jobs — configuration,
+  payload shapes, retry policy and header validation — on the self-hosted server
+  and as a webhook_url parameter on every v1 async job. It publishes NO AsyncAPI
+  document, so this is a webhook catalog rather than an event spec.
+asyncapi_published: false
+asyncapi_probed:
+  - {url: 'https://gate.crawl4ai.com/asyncapi.yaml', status: 404}
+  - {url: 'https://gate.crawl4ai.com/asyncapi.json', status: 404}
+delivery:
+  style: http-callback
+  direction: provider-to-consumer
+  transport: 'HTTPS POST to a caller-supplied URL'
+  subscription: >-
+    Per job. There is no subscription API and no event catalog — the caller passes
+    webhook_url (v1) or webhook_config (self-hosted) at submit time.
+  purpose: '"eliminating the need for polling"'
+configuration:
+  v1_api:
+    parameter: webhook_url
+    applies_to:
+      - 'POST /v1/markdown/async'
+      - 'POST /v1/screenshot/async'
+      - 'POST /v1/extract/async'
+      - 'POST /v1/crawl/async'
+      - 'POST /v1/crawl/site'
+    note: 'Described as "POST callback on completion".'
+  self_hosted:
+    parameter: webhook_config
+    fields:
+      - {name: webhook_url, type: string, description: Destination URL.}
+      - {name: webhook_data_in_payload, type: bool, description: Include the full crawl results in the payload rather than only a notification.}
+    global_config_key: webhooks
+    global_defaults:
+      enabled: true
+      default_url: null
+      data_in_payload: false
+      headers: {User-Agent: 'Crawl4AI-Webhook/1.0'}
+    source: deploy/docker/config.yml
+events:
+  - name: crawl.completed
+    trigger: An async crawl job finishes.
+    payload_example:
+      task_id: crawl_a1b2c3d4
+      task_type: crawl
+      status: completed
+      timestamp: '2025-10-21T10:30:00.000000+00:00'
+      urls: ['https://example.com']
+    note: >-
+      Notification-only shape (webhook_data_in_payload:false). The handler is
+      expected to fetch results with GET /crawl/job/{task_id}. With
+      webhook_data_in_payload:true the full crawl results are inlined instead.
+    payload_field_names_verbatim: true
+retry_policy:
+  published: true
+  max_attempts: 5
+  backoff: exponential
+  initial_delay_ms: 1000
+  schedule: '1s, 2s, 4s, 8s, 16s'
+  max_delay_ms: 32000
+  timeout_ms: 30000
+  note: '30s timeout per webhook call.'
+security:
+  signature: none
+  finding: >-
+    NO webhook signing is published — no HMAC signature header, no shared secret,
+    no timestamp/replay protection. A receiver cannot verify that a callback came
+    from Crawl4AI, and with webhook_data_in_payload:true the callback carries the
+    crawl content itself. Custom headers can be set, so a caller can supply their
+    own bearer as a workaround.
+  header_validation:
+    since: 0.8.8
+    rule: >-
+      User-supplied webhook headers are validated — name pattern enforced, control
+      characters rejected, hop-by-hop and sensitive headers denied — and malformed
+      headers return HTTP 422 (CWE-93 fix).
+  destination_validation:
+    since: 0.9.0
+    rule: 'Webhook destinations are pinned/validated (deploy/docker/tests/test_security_webhook_pinning.py).'
+gate_api_note: >-
+  The gate.crawl4ai.com Cloud API job surface (POST /scrape/jobs) documents
+  submit, status, results and retry but NO webhook parameter — on that surface an
+  agent must poll. Webhooks are available on the v1 API and the self-hosted server
+  only.
+recommendation: >-
+  Publishing an AsyncAPI 3.x document for these callbacks, plus a signature
+  header, would make the event surface consumable without reading prose.
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com

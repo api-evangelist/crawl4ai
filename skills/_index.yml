@@ -1,0 +1,83 @@
+generated: '2026-08-29'
+method: searched
+source: >-
+  https://github.com/unclecode/crawl4ai-cloud-sdk/tree/main/python/claude-plugin/skills
+  (provider-published, saved verbatim) plus one API Evangelist skill for the flow
+  the provider does not cover
+provider: Crawl4AI
+providerId: crawl4ai
+description: >-
+  Crawl4AI PUBLISHES ITS OWN AGENT SKILLS. Four Claude Code skills ship inside the
+  first-party crawl4ai-cloud-sdk repository, distributed through its own
+  .claude-plugin/marketplace.json alongside a local stdio MCP server. They are
+  saved here verbatim, unedited.
+skills:
+  - file: crawl4ai-crawl4ai-provider-skill.md
+    name: crawl4ai
+    method: searched
+    provider_published: true
+    source: >-
+      https://github.com/unclecode/crawl4ai-cloud-sdk/blob/main/python/claude-plugin/skills/crawl4ai/SKILL.md
+    description: >-
+      "Web crawling, screenshots, data extraction, URL discovery. Use when the user
+      asks to crawl, scrape, extract data from, screenshot, or discover URLs on a
+      website." Wraps markdown / screenshot / extract / map / site / crawl / async
+      plus job polling and key validation.
+    references:
+      - reference/crawl4ai-endpoints.md
+      - reference/crawl4ai-errors.md
+  - file: crawl4ai-setup-provider-skill.md
+    name: crawl4ai:setup
+    method: searched
+    provider_published: true
+    source: >-
+      https://github.com/unclecode/crawl4ai-cloud-sdk/blob/main/python/claude-plugin/skills/setup/SKILL.md
+    description: First-run configuration of the plugin (key, mode).
+  - file: crawl4ai-switch-provider-skill.md
+    name: crawl4ai:switch
+    method: searched
+    provider_published: true
+    source: >-
+      https://github.com/unclecode/crawl4ai-cloud-sdk/blob/main/python/claude-plugin/skills/switch/SKILL.md
+    description: >-
+      Switch the agent between the cloud API and a local pip-installed crawler,
+      rewriting ~/.crawl4ai/claude_config.json and verifying with a live crawl.
+  - file: crawl4ai-update-provider-skill.md
+    name: crawl4ai:update
+    method: searched
+    provider_published: true
+    source: >-
+      https://github.com/unclecode/crawl4ai-cloud-sdk/blob/main/python/claude-plugin/skills/update/SKILL.md
+    description: Update the plugin and its dependencies.
+  - file: crawl4ai-bulk-crawl-job.md
+    name: crawl4ai-bulk-crawl-job
+    method: generated
+    provider_published: false
+    source: 'https://gate.crawl4ai.com/docs, https://gate.crawl4ai.com/llms.txt'
+    description: >-
+      Submit / poll / page / retry a 10,000-URL async job on the gate Cloud API —
+      the surface the provider's own skills do not cover, and the one with no
+      cancel operation and no idempotency key.
+reference_files:
+  - file: reference/crawl4ai-endpoints.md
+    method: searched
+    provider_published: true
+    source: >-
+      https://github.com/unclecode/crawl4ai-cloud-sdk/blob/main/python/claude-plugin/skills/crawl4ai/reference/endpoints.md
+    note: >-
+      The most complete API reference Crawl4AI publishes anywhere — every v1
+      endpoint with parameter tables, defaults and response shapes. It is the
+      closest thing the company has to an OpenAPI, and it lives inside a skill.
+  - file: reference/crawl4ai-errors.md
+    method: searched
+    provider_published: true
+    source: >-
+      https://github.com/unclecode/crawl4ai-cloud-sdk/blob/main/python/claude-plugin/skills/crawl4ai/reference/errors.md
+    note: 'Status-by-status error reference, rate-limit headers and retry strategy.'
+grounding_note: >-
+  No operationIds are cited anywhere in these skills because Crawl4AI publishes no
+  OpenAPI for either live surface. Every path, parameter and status quoted in the
+  generated skill is verbatim from the provider's own documentation.
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com

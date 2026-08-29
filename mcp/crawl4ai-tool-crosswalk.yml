@@ -1,0 +1,135 @@
+generated: '2026-08-29'
+method: derived
+source: >-
+  mcp/crawl4ai-mcp-tools.json (live tools/list), gate.crawl4ai.com/llms.txt,
+  gate.crawl4ai.com/docs, and the provider-published endpoint reference at
+  skills/reference/crawl4ai-endpoints.md
+provider: Crawl4AI
+providerId: crawl4ai
+description: >-
+  Binds every live Crawl4AI MCP tool to the REST operation behind it, and records
+  what each surface can do that the others cannot. Crawl4AI has NO published
+  OpenAPI for either live REST surface, so `rest` rows below carry METHOD + PATH
+  in place of an operationId — there is no operationId to cite, and inventing one
+  would be fabrication.
+surfaces:
+  - name: Crawl4AI Cloud API (gate)
+    kind: rest
+    base_url: https://gate.crawl4ai.com
+    contract: none-published
+    documented_at: https://gate.crawl4ai.com/docs
+    gated: 'yes — every operation returns 401 without a key (probed 2026-08-29)'
+  - name: Crawl4AI Cloud v1 API
+    kind: rest
+    base_url: https://api.crawl4ai.com
+    contract: none-published
+    documented_at: >-
+      https://github.com/unclecode/crawl4ai-cloud-sdk/blob/main/python/claude-plugin/skills/crawl4ai/reference/endpoints.md
+    gated: 'yes — X-API-Key required'
+  - name: Crawl4AI Cloud MCP
+    kind: mcp
+    url: https://gate.crawl4ai.com/mcp
+    contract: mcp/crawl4ai-mcp-tools.json
+    gated: 'partly — tools/list is anonymous, tools/call needs a key'
+  - name: Crawl4AI Platform Gateway (legacy)
+    kind: rest
+    contract: openapi/crawl4ai-platform-gateway-openapi.json
+    gated: 'n/a — the routes it declares 404 on the live gate host'
+  - name: graphql
+    present: false
+crosswalk:
+  - tool: scrape
+    category: retrieval
+    rest:
+      - 'POST /scrape (gate.crawl4ai.com)'
+    binding: one-to-one
+    confidence: high
+    note: >-
+      Tool inputSchema (url, format, proxy, country, parse, bypass_cache) matches
+      the documented /scrape body field for field, plus bypass_cache which the
+      REST docs describe but llms.txt omits.
+  - tool: search
+    category: retrieval
+    rest:
+      - 'GET /search (gate.crawl4ai.com)'
+    binding: one-to-one
+    confidence: high
+    note: 'Tool `rich` boolean maps to the REST rich=0|1 query param.'
+  - tool: answer
+    category: retrieval
+    rest:
+      - 'GET /answer (gate.crawl4ai.com)'
+    binding: partial
+    confidence: high
+    note: >-
+      REST /answer also takes `deep` (0|1, default 1); the MCP tool exposes only
+      `q`, so the deep/shallow choice is not reachable from an agent. Both are
+      marked experimental by the provider.
+  - tool: extract
+    category: transformation
+    rest:
+      - 'POST /extract (gate.crawl4ai.com)'
+    binding: partial
+    confidence: high
+    note: >-
+      REST /extract accepts `content` (inline text instead of a URL); the MCP tool
+      requires `url`, so inline-content extraction is REST-only.
+  - tool: batch
+    category: retrieval
+    rest:
+      - 'POST /scrape/batch (gate.crawl4ai.com)'
+    binding: one-to-one
+    confidence: high
+    note: 'Up to ~50 URLs; NDJSON streamed one line per URL.'
+mcp_only: []
+rest_only:
+  - operation: 'POST /scrape/jobs (gate)'
+    reason: >-
+      Large async jobs, up to 10,000 URLs. No MCP tool submits one, so an agent
+      cannot start a bulk crawl through MCP.
+  - operation: 'GET /scrape/jobs/{id} (gate)'
+    reason: Job status and counts; no MCP equivalent.
+  - operation: 'GET /scrape/jobs/{id}/results (gate)'
+    reason: Paged NDJSON results (?after=N, 500 per page); no MCP equivalent.
+  - operation: 'POST /scrape/jobs/{id}/retry (gate)'
+    reason: Re-run only the failed URLs; no MCP equivalent.
+  - operation: 'GET /health (gate)'
+    reason: 'Unauthenticated liveness check ({"ok":true}); no MCP equivalent.'
+  - operation: 'POST /v1/markdown (api)'
+    reason: v1 API. The MCP server does not front api.crawl4ai.com at all.
+  - operation: 'POST /v1/markdown/async, GET|DELETE /v1/markdown/jobs[/{id}] (api)'
+    reason: v1 async markdown jobs, batch up to 100, webhook_url + priority.
+  - operation: 'POST /v1/screenshot, /v1/screenshot/async, /v1/screenshot/jobs* (api)'
+    reason: >-
+      Screenshot and PDF capture. NOTHING on the gate surface or in MCP takes a
+      screenshot — this capability is reachable only through the v1 REST API.
+  - operation: 'POST /v1/extract, /v1/extract/async, /v1/extract/jobs* (api)'
+    reason: >-
+      v1 extraction with method auto|llm|schema and a reusable CSS schema; richer
+      than the gate /extract the MCP tool wraps.
+  - operation: 'POST /v1/map (api)'
+    reason: >-
+      Domain URL discovery with BM25 relevance scoring. No MCP tool discovers URLs.
+  - operation: 'POST /v1/crawl/site (api)'
+    reason: 'Whole-site crawl, max 1000 pages, discovery map|bfs|dfs|best_first.'
+  - operation: 'POST /v1/crawl, /v1/crawl/async, /v1/crawl/jobs* (api)'
+    reason: Full CrawlerRunConfig surface (40+ fields).
+  - operation: 'POST /crawl/job, GET /crawl/job/{jobId} (legacy gateway spec)'
+    reason: >-
+      The only two operations in the one OpenAPI Crawl4AI has ever published. Both
+      404 on gate.crawl4ai.com (probed 2026-08-29) — the spec describes a retired
+      Zuplo gateway, not a live surface.
+coverage:
+  mcp_tools: 5
+  mapped_to_rest: 5
+  mcp_only: 0
+  rest_only_operations: 13
+  openapi_operations_published: 2
+  openapi_operations_live: 0
+  note: >-
+    Every MCP tool has a REST operation behind it, but MCP reaches only 5 of the
+    18 documented live REST operations. Screenshots, PDFs, URL discovery,
+    whole-site crawling and every async job surface are invisible to an agent.
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com

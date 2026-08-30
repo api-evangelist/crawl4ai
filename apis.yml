@@ -47,6 +47,16 @@ tags:
   - LLM Tooling
   - Agents
   - MCP
+  - Open-Source
+tags_raw:
+  - AI Automation
+  - Web Crawling
+  - Web Scraping
+  - Data Extraction
+  - Search
+  - LLM Tooling
+  - Agents
+  - MCP
   - Open Source
 url: >-
   https://raw.githubusercontent.com/api-evangelist/crawl4ai/refs/heads/main/apis.yml
@@ -123,6 +133,10 @@ apis:
       Templated on purpose — this server runs on the customer's own host. Crawl4AI
       operates no instance of it.
     tags:
+      - AI Automation
+      - Web Crawling
+      - Open-Source
+    tags_raw:
       - AI Automation
       - Web Crawling
       - Open Source

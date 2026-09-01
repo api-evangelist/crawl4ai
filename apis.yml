@@ -148,6 +148,9 @@ apis:
       - type: ContainerImage
         url: https://hub.docker.com/r/unclecode/crawl4ai
 common:
+  - type: License
+    name: Apache-2.0
+    url: https://github.com/unclecode/crawl4ai-cloud-sdk/blob/main/LICENSE
   - type: Website
     url: https://crawl4ai.com
   - type: DeveloperPortal

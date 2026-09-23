@@ -1,0 +1,23 @@
+{
+  "provider": "crawl4ai",
+  "sources": [
+    "_original/crawl4ai-platform-gateway-openapi.json"
+  ],
+  "outputs": [
+    "crawl4ai-crawl-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "crawl4ai-platform-gateway-openapi.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "crawl4ai-platform-gateway-openapi.json: tagged paths POST /crawl/job -> Crawl",
+    "crawl4ai-platform-gateway-openapi.json: tagged paths GET /crawl/job/{jobId} -> Crawl",
+    "crawl4ai-platform-gateway-openapi.json: declared missing tag: Crawl",
+    "apis.yml register: already-registered"
+  ],
+  "skipped": [
+    "crawl4ai-crawl-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
+}

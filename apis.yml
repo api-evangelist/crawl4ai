@@ -35,6 +35,9 @@ accessModel:
   generated: '2026-08-29'
   method: searched
 image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/crawl4ai.png
+x-docs-platform: mkdocs
+x-docs-platform-confidence: medium
+x-docs-platform-checked: 2026-09-24
 tags:
 - AI Automation
 - Web Crawling
@@ -44,7 +47,7 @@ tags:
 - LLM Tooling
 - Agents
 - MCP
-- Open-Source
+- Open Source
 tags_raw:
 - AI Automation
 - Web Crawling
@@ -55,6 +58,7 @@ tags_raw:
 - Agents
 - MCP
 - Open Source
+- Open-Source
 url: https://raw.githubusercontent.com/api-evangelist/crawl4ai/refs/heads/main/apis.yml
 created: '2026-03-27'
 modified: '2026-09-16'
@@ -120,11 +124,12 @@ apis:
   tags:
   - AI Automation
   - Web Crawling
-  - Open-Source
+  - Open Source
   tags_raw:
   - AI Automation
   - Web Crawling
   - Open Source
+  - Open-Source
   properties:
   - type: Documentation
     url: https://docs.crawl4ai.com/core/self-hosting/

@@ -1,4 +1,4 @@
-# Crawl4AI (crawl4ai)
+# Crawl4AI
 
 <!-- API-EVANGELIST-PROVENANCE:BEGIN -->
 > ### About this repository
@@ -64,48 +64,138 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Crawl4AI is an open-source web crawling tool optimized for feeding web content into large language models.
+Crawl4AI is an open-source, Apache-2.0 web crawler and scraper built to turn any URL into clean, LLM-ready data — Markdown, typed JSON, screenshots, PDFs, or a map of every URL on a domain. Operated by CONTEXT4AI PTE LTD of Singapore and created by Hossein Tohidi (@unclecode), the project pairs a 79,000-star Python library and self-hostable Docker API server with a hosted Cloud API at gate.crawl4ai.com that serves scrape, search, answer, extract and bulk-job endpoints from three regions, plus a live remote MCP server that exposes the same capabilities to agents as five native tools. Self-hosting is free and unmetered; the hosted tier is free at 5,000 searches and 1,000 scrapes a month.
 
-**APIs.json:** [https://raw.githubusercontent.com/api-evangelist/crawl4ai/refs/heads/main/apis.yml](https://raw.githubusercontent.com/api-evangelist/crawl4ai/refs/heads/main/apis.yml)
+**Areas:** AI Automation · Web Crawling · Web Scraping · Data Extraction · Search · LLM Tooling · Agents · MCP · Open Source
 
-## Scope
+## Crawl4AI on APIs.io
 
-- **Type:** Index
+Everything profiled for Crawl4AI is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/crawl4ai/](https://apis.io/providers/crawl4ai/)** — or go straight to one of the APIs or properties below.
 
-## Tags
+### APIs (4)
 
-- AI Automation
-- Web Crawling
+- [Crawl4AI Cloud API](https://apis.io/apis/crawl4ai/crawl4ai/) — The hosted Crawl4AI API. One key, plain JSON, one fast endpoint per job: POST /scrape turns a URL into clean Markdown or HTML, GET /search runs a…
+- [Crawl4AI Cloud v1 API](https://apis.io/apis/crawl4ai/crawl4ai-v1/) — The versioned Crawl4AI cloud surface the first-party Cloud SDKs and the Claude Code plugin call. Covers POST /v1/markdown, /v1/screenshot (screenshot and…
+- [Crawl4AI Self-Hosted API](https://apis.io/apis/crawl4ai/crawl4ai-docker/) — The Apache-2.0 API server that ships inside the crawl4ai project and the unclecode/crawl4ai Docker image, serving on port 11235 on infrastructure the…
+- [Crawl4AI Crawl API](https://apis.io/apis/crawl4ai/crawl4ai-crawl-api/) — The Crawl API from Crawl4AI — 2 operation(s) for crawl.
 
-## Timestamps
+### Published properties
 
-- **Created:** 2026-03-27
-- **Modified:** 2026-03-27
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
 
-## APIs
+#### AsyncAPI (1)
 
-### Crawl4AI
+Event-driven and webhook contracts.
 
-Crawl4AI is an open-source web crawling tool optimized for feeding web content into large language models.
+- [Crawl4Ai Webhooks](https://apis.io/asyncapis/crawl4ai/crawl4ai-webhooks/)
 
-- **Human URL:** [https://crawl4ai.com](https://crawl4ai.com)
+#### MCP servers (1)
 
-#### Tags
+Model Context Protocol servers that expose the API to agents.
 
-- AI Automation
+- [Crawl4AI Cloud MCP Server](https://apis.io/servers/crawl4ai/crawl4ai-cloud-mcp-server/)
 
-#### Properties
+#### Overlays (2)
 
-- [Documentation](https://docs.crawl4ai.com)
+OpenAPI overlays, including conversational phrasing for each operation.
 
-## Common Properties
+- [Crawl4Ai Crawl Api Phrasing Overlay](https://apis.io/overlays/crawl4ai/crawl4ai-crawl-api-phrasing-overlay/)
+- [Crawl4Ai Platform Gateway Overlay](https://apis.io/overlays/crawl4ai/crawl4ai-platform-gateway-overlay/)
 
-- [LinkedIn](https://www.linkedin.com/company/crawl4ai)
+#### Security (3)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [Crawl4Ai Authentication](https://apis.io/security/crawl4ai/crawl4ai-authentication/)
+- [Crawl4Ai Domain Security](https://apis.io/security/crawl4ai/crawl4ai-domain-security/)
+- [Crawl4Ai Vulnerability Disclosure](https://apis.io/security/crawl4ai/crawl4ai-vulnerability-disclosure/)
+
+#### Plans and pricing (1)
+
+Published plans, tiers and prices.
+
+- [Crawl4Ai Plans Pricing](https://apis.io/plans/crawl4ai/crawl4ai-plans-pricing/)
+
+#### Rate limits (1)
+
+Published request limits.
+
+- [Crawl4Ai Rate Limits](https://apis.io/rate-limits/crawl4ai/crawl4ai-rate-limits/)
+
+#### FinOps (1)
+
+What the API costs to run, by operation.
+
+- [Crawl4Ai Finops](https://apis.io/finops/crawl4ai/crawl4ai-finops/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
 - [Website](https://crawl4ai.com)
 - [Documentation](https://docs.crawl4ai.com)
-- [Integrations](https://docs.crawl4ai.com/marketplace/)
+- [Getting started](https://docs.crawl4ai.com/core/quickstart/)
+- [API reference](https://gate.crawl4ai.com/docs)
+- [Pricing](https://gate.crawl4ai.com/#pricing)
+- [Sign up](https://gate.crawl4ai.com/dashboard/)
+- [Support](https://discord.gg/jP8KfhDhyN)
+- [Blog](https://docs.crawl4ai.com/blog/)
+- [Terms of service](https://gate.crawl4ai.com/legal/#terms)
+- [Privacy policy](https://gate.crawl4ai.com/legal/#privacy)
+- [GitHub](https://github.com/unclecode)
+- [Status](https://unclecode.github.io/crawl4ai-status/)
 
-## Maintainers
+## API Evangelist rating
 
-**FN:** Kin Lane
-**Email:** kin@apievangelist.com
+**Kin Score 67.1** — exemplar · rubric 0.25.0 · scored 2026-10-23
+
+| Facet | Score |
+|---|---|
+| Discoverability | 75.0 |
+| Contract quality | 47.3 |
+| Contract governance | 18.2 |
+| Operational transparency | 97.4 |
+| Developer ergonomics | 85.7 |
+| Access clarity | 71.1 |
+
+**Agent readiness 38.7** — agent-ready (gated down from agent-native)
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | — |
+| Reversibility Documented | — |
+| MCP Server | verified |
+| Auth Clarity | bearer (partial credit) |
+| Idempotency | — |
+| Error Semantics | documented (partial credit) |
+| OpenAPI Examples | — |
+| Rate Limit Signal | documented (partial credit) |
+| Event Surface Described | yes |
+| Agent Skills | yes |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | — |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+| Pagination Ratio | na |
+| Operation Distinctiveness | distinct |
+
+**Regulatory alignment 30.4** — Horizontal (data, software, accessibility, platform)
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/crawl4ai/](https://apis.io/providers/crawl4ai/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for Crawl4AI: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/crawl4ai/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).

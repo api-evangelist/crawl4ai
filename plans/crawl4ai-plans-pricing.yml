@@ -68,7 +68,7 @@ rate_limit_statements:
 - 125,000 credits a month, 600 a minute, 20 at a time.
 - 750,000 credits a month, 1,500 a minute, 50 at a time.
 x-canonical:
-  generated: '2026-11-01'
+  generated: '2026-11-02'
   vocabulary: engine/economics/plans-canonical.yml
   models:
   - hybrid
